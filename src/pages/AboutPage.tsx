@@ -33,8 +33,9 @@ export function AboutPage() {
 
       <h2>Open data</h2>
       <p>
-        The docket is three JSON files in a public repository. Pull requests that add a sourced incident or correct an
-        existing one are welcome. A daily job searches for new incidents and appends what it can verify.
+        The docket lives in a database behind a public, read-only API (<code>/api/bootstrap</code> returns all of it), and a
+        JSON snapshot is kept in the public repository. A daily job searches for new incidents and appends what it can
+        verify. Corrections to an existing entry are welcome as issues or pull requests.
       </p>
       <p>
         <a href={REPO_URL} target="_blank" rel="noreferrer">
@@ -42,9 +43,17 @@ export function AboutPage() {
         </a>
       </p>
 
+      <h2>Submit a felony</h2>
+      <p>
+        Found a sourced incident that is not on the docket? <Link to="/submit">Submit it</Link>. Submissions go into a
+        review queue. A human checks the sources, and approved entries run through the same checks as the daily refresh
+        before they reach the board.
+      </p>
+
       <h2>Contact</h2>
       <p>
-        Corrections, additions, and complaints go through{' '}
+        New incidents are best sent through the <Link to="/submit">submission form</Link>. Corrections and complaints go
+        through{' '}
         <a href={`${REPO_URL}/issues`} target="_blank" rel="noreferrer">
           GitHub issues
         </a>

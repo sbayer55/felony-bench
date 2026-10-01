@@ -1,11 +1,12 @@
 import { Link } from 'react-router-dom'
 import type { Incident } from '../data/schema'
-import { modelById, providerById } from '../data'
+import { useData } from '../data/DataProvider'
 import { formatDate } from '../lib/format'
 import { CategoryBadge, DegreeBadge, EvidenceBadge, RoleBadge } from './Badge'
 import styles from './IncidentCard.module.css'
 
 export function IncidentCard({ incident, compact = false }: { incident: Incident; compact?: boolean }) {
+  const { modelById, providerById } = useData()
   const models = incident.modelIds.map((id) => modelById.get(id)?.name ?? id)
   const providers = incident.providerIds.map((id) => providerById.get(id)?.name ?? id)
   return (

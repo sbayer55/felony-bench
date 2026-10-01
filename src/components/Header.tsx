@@ -1,5 +1,4 @@
 import { NavLink } from 'react-router-dom'
-import { REPO_URL } from '../data'
 import { useTheme } from '../lib/useTheme'
 import styles from './Header.module.css'
 
@@ -35,9 +34,9 @@ export function Header() {
           <button type="button" className={styles.iconBtn} onClick={toggle} aria-label={isDark ? 'Switch to light theme' : 'Switch to dark theme'} title={isDark ? 'Light theme' : 'Dark theme'}>
             {isDark ? '☀' : '☾'}
           </button>
-          <a className={styles.submit} href={`${REPO_URL}/blob/main/README.md#submit-a-felony`} target="_blank" rel="noreferrer">
+          <NavLink to="/submit" className={styles.submit}>
             Submit a felony
-          </a>
+          </NavLink>
         </div>
       </div>
     </header>

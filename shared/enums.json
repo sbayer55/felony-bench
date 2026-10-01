@@ -1,0 +1,7 @@
+{
+  "categories": ["unauthorized-access", "data-breach", "containment-escape", "deception", "destruction", "extortion", "fabrication", "accessory", "copyright", "other"],
+  "evidenceClasses": ["production", "evaluation", "alleged", "litigation", "regulatory"],
+  "roles": ["actor", "instrument", "infrastructure"],
+  "attribution": ["confirmed", "reported", "disputed"],
+  "degrees": [1, 2, 3]
+}

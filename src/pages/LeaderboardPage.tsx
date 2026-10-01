@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import { incidents, models, providers } from '../data'
+import { useData } from '../data/DataProvider'
 import { CATEGORIES, type Category } from '../data/schema'
 import { computeStats, filterIncidents, filterRows, scoreModels, scoreProviders } from '../lib/score'
 import { useFilters } from '../lib/useFilters'
@@ -11,12 +11,13 @@ import { CategoryByProvider } from '../components/charts/CategoryByProvider'
 import styles from './LeaderboardPage.module.css'
 
 export function LeaderboardPage() {
+  const { incidents, models, providers } = useData()
   const { state, update, reset, active } = useFilters()
 
-  const scoped = useMemo(() => filterIncidents(incidents, { categories: state.categories, evidence: state.evidence }), [state.categories, state.evidence])
+  const scoped = useMemo(() => filterIncidents(incidents, { categories: state.categories, evidence: state.evidence }), [incidents, state.categories, state.evidence])
 
-  const allModelRows = useMemo(() => scoreModels(models, providers, scoped), [scoped])
-  const allProviderRows = useMemo(() => scoreProviders(providers, scoped), [scoped])
+  const allModelRows = useMemo(() => scoreModels(models, providers, scoped), [models, providers, scoped])
+  const allProviderRows = useMemo(() => scoreProviders(providers, scoped), [providers, scoped])
   const rankSource = state.view === 'models' ? allModelRows : allProviderRows
 
   const rows = useMemo(
@@ -37,7 +38,7 @@ export function LeaderboardPage() {
     const out = Object.fromEntries(CATEGORIES.map((c) => [c, 0])) as Record<Category, number>
     for (const inc of base) out[inc.category] += 1
     return out
-  }, [state.evidence])
+  }, [incidents, state.evidence])
 
   const scopeLabel = [
     state.evidence === 'all' ? 'all evidence classes' : state.evidence === 'production' ? 'incidents outside the lab' : 'lab evaluations only',
