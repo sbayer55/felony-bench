@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { ACTIONS_URL, REPO_URL } from '../data'
+import { REPO_URL } from '../data'
 import {
   CATEGORIES,
   CATEGORY_DESCRIPTIONS,
@@ -148,22 +148,12 @@ score(provider) = Σ degree(i)   for i in incidents where provider ∈ i.provide
 
       <h2>How the docket is refreshed</h2>
       <p>
-        A GitHub Actions workflow runs once a day. It asks a Claude model with web search to look for new, sourced incidents,
+        A scheduled job on the server runs once a day. It asks a Claude model with web search to look for new, sourced incidents,
         then runs the candidates through deterministic checks: schema validation, duplicate detection against the existing
         docket, a live fetch of every source URL, and a check that every provider and model is on the roster. At most ten
         incidents are added per run. The job is append-only: it never edits or removes an existing entry. What passes is
         written to the database in a single transaction and appears on the site within seconds.
       </p>
-      <p>
-        Anyone can trigger a refresh by hand from the{' '}
-        <a href={ACTIONS_URL} target="_blank" rel="noreferrer">
-          Actions page
-        </a>{' '}
-        with "Run workflow", or with the GitHub CLI:
-      </p>
-      <pre>
-        <code>gh workflow run refresh.yml -f max=10</code>
-      </pre>
       <p>
         To preview locally without writing anything, set <code>ANTHROPIC_API_KEY</code> and run <code>pnpm refresh --dry-run</code>.
       </p>

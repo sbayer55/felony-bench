@@ -1,0 +1,7 @@
+{
+  "app": "pnpm exec tsx bin/felony.ts",
+  "context": {
+    "githubRepo": "sbayer55/felony-bench",
+    "createOidcProvider": true
+  }
+}
