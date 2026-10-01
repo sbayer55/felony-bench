@@ -1,0 +1,10 @@
+[Unit]
+Description=Daily Felony Bench incident refresh
+
+[Timer]
+OnCalendar=*-*-* 06:17:00 UTC
+Persistent=true
+RandomizedDelaySec=0
+
+[Install]
+WantedBy=timers.target

@@ -13,6 +13,11 @@ COPY scripts scripts
 COPY shared shared
 RUN pnpm build
 
+# --- daily refresh job (deploy/refresh.sh); extra args go to the script, e.g. --max=10 ---
+FROM web AS refresh
+USER node
+ENTRYPOINT ["node_modules/.bin/tsx", "scripts/refresh-incidents.ts"]
+
 # --- API ---
 FROM rust:1-slim-bookworm AS chef
 RUN cargo install cargo-chef --locked
@@ -29,8 +34,8 @@ COPY shared /app/shared
 COPY api/ .
 RUN cargo build --release --locked
 
-# --- runtime ---
-FROM debian:bookworm-slim
+# --- runtime (default target) ---
+FROM debian:bookworm-slim AS app
 RUN apt-get update \
   && apt-get install -y --no-install-recommends ca-certificates \
   && rm -rf /var/lib/apt/lists/* \

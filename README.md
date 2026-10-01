@@ -70,7 +70,7 @@ Use the **Submit a felony** form on the site. Entries are reviewed before they g
 
 ## Automated refresh
 
-`.github/workflows/refresh.yml` runs daily at 06:17 UTC. It calls Claude with web search, asks for new sourced incidents, then applies deterministic guardrails in `scripts/lib/pipeline.ts`:
+A systemd timer on the host (`deploy/systemd/felony-refresh.timer`) runs `scripts/refresh-incidents.ts` daily at 06:17 UTC. It calls Claude with web search, asks for new sourced incidents, then applies deterministic guardrails in `scripts/lib/pipeline.ts`:
 
 - zod schema validation
 - duplicate detection against the docket (normalized source URL, or similar title within 30 days from the same provider)
@@ -83,16 +83,16 @@ What passes is inserted into Postgres in one transaction (the database re-checks
 
 ### Trigger it by hand
 
-- GitHub: **Actions → Refresh incidents → Run workflow** (inputs: `max`, `since`, `dry_run`)
-- CLI: `gh workflow run refresh.yml -f max=10`
+- On the host (via `aws ssm start-session`): `sudo systemctl start felony-refresh`, or `sudo /opt/felony/src/deploy/refresh.sh --max=10 --dry-run` to preview. Logs: `journalctl -u felony-refresh`
 - Locally: `DATABASE_URL=… ANTHROPIC_API_KEY=… pnpm refresh --dry-run`, then without the flag to write
 
-### Setup
+The host reads `ANTHROPIC_API_KEY` from SSM Parameter Store (`/felony-bench/env/ANTHROPIC_API_KEY`) and skips the run until it exists.
 
-- Host the Docker image and a Postgres database (the image runs migrations on start). Set `ADMIN_TOKEN`, `IP_SALT`, and `TRUST_PROXY=true` if it sits behind a reverse proxy.
-- Add `DATABASE_URL` and `ANTHROPIC_API_KEY` repository secrets. The refresh workflow skips itself until `DATABASE_URL` exists.
-- If the SPA is hosted separately from the API, build it with `VITE_API_URL=https://your-api` and set `CORS_ORIGIN` on the API.
-- Update `REPO_URL` in `src/data/index.ts` if the repository moves.
+## Hosting
+
+One EC2 instance (t4g.small) runs Postgres, the API, Caddy (HTTPS) and the daily refresh in Docker, defined with AWS CDK in `infra/`. CI builds arm64 images to GHCR on `main` and deploys them through SSM. See [infra/README.md](infra/README.md).
+
+If the SPA is ever hosted separately from the API, build it with `VITE_API_URL=https://your-api` and set `CORS_ORIGIN` on the API. Update `REPO_URL` in `src/data/index.ts` if the repository moves.
 
 ## Stack
 

@@ -5,3 +5,5 @@ dist
 api/target
 .env
 *.log
+infra
+deploy

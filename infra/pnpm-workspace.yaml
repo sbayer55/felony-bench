@@ -1,0 +1,6 @@
+# Standalone from the root app: keeps the root lockfile (used by the Docker build) free of CDK.
+packages: []
+allowBuilds:
+  esbuild: true
+minimumReleaseAgeExclude:
+  - aws-cdk-lib@2.272.0

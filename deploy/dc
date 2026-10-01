@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+# docker compose for the production stack, with the host's secrets.
+exec docker compose --project-name felony --env-file /data/felony/.env \
+  -f "$(dirname "$(readlink -f "$0")")/compose.yml" "$@"

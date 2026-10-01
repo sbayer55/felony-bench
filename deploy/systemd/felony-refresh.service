@@ -1,0 +1,10 @@
+[Unit]
+Description=Felony Bench incident refresh
+After=docker.service network-online.target
+Requires=docker.service
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=/opt/felony/src/deploy/refresh.sh --max=10
+TimeoutStartSec=30min

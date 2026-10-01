@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { ACTIONS_URL, REPO_URL } from '../data'
+import { REPO_URL } from '../data'
 import { useDataStatus } from '../data/DataProvider'
 import { relativeTime } from '../lib/format'
 import styles from './Footer.module.css'
@@ -27,9 +27,6 @@ export function Footer() {
             )}
           </span>
           <Link to="/submit">Submit a felony</Link>
-          <a href={ACTIONS_URL} target="_blank" rel="noreferrer">
-            Request refresh
-          </a>
           <a href={REPO_URL} target="_blank" rel="noreferrer">
             Source
           </a>
