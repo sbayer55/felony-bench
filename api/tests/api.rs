@@ -433,3 +433,10 @@ async fn integrity_triggers_reject_orphans(pool: PgPool) {
         .unwrap();
     assert!(tx.commit().await.is_err());
 }
+
+#[sqlx::test(migrations = "./migrations")]
+async fn is_empty_tracks_first_seed(pool: PgPool) {
+    assert!(seed::is_empty(&pool).await.unwrap());
+    seed::import(&pool, &seed_dir()).await.unwrap();
+    assert!(!seed::is_empty(&pool).await.unwrap());
+}

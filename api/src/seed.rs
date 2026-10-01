@@ -36,6 +36,14 @@ pub fn read_dir(dir: &Path) -> anyhow::Result<(Vec<Provider>, Vec<Model>, Vec<In
     Ok((providers, models, incidents))
 }
 
+/// True when the database has no providers yet, i.e. it has never been seeded.
+pub async fn is_empty(pool: &PgPool) -> anyhow::Result<bool> {
+    let any: bool = sqlx::query_scalar("SELECT EXISTS (SELECT 1 FROM providers)")
+        .fetch_one(pool)
+        .await?;
+    Ok(!any)
+}
+
 /// Inserts anything not already present, in one transaction. Referential problems abort the whole import.
 pub async fn import(pool: &PgPool, dir: &Path) -> anyhow::Result<SeedCounts> {
     let (providers, models, incidents) = read_dir(dir)?;

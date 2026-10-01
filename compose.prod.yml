@@ -1,0 +1,122 @@
+# Production stack: Caddy (HTTPS) → API + SPA → Postgres, plus the scheduled refresh and nightly backups.
+#   cp .env.example .env              # fill in the "Production" block
+#   docker compose -f compose.prod.yml up -d            # pulls images from GHCR
+#   docker compose -f compose.prod.yml up -d --build    # or builds them here
+# Only Caddy publishes ports. A fresh database is migrated and seeded from data/seed on first start.
+# Own project name, so it never shares containers or the pgdata volume with the dev docker-compose.yml.
+name: felony-bench-prod
+
+x-hardening: &hardening
+  restart: unless-stopped
+  security_opt: [no-new-privileges:true]
+  networks: [internal]
+
+x-db-env: &db-env
+  DATABASE_URL: postgres://felony:${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}@db:5432/felony
+
+services:
+  db:
+    <<: *hardening
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: felony
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}
+      POSTGRES_DB: felony
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U felony -d felony"]
+      interval: 5s
+      timeout: 3s
+      retries: 30
+
+  # Migrates, and seeds only a database that has never been seeded. Exits when done.
+  seed:
+    <<: *hardening
+    image: ghcr.io/sbayer55/felony-bench:${IMAGE_TAG:-latest}
+    build: { context: ., target: api }
+    restart: "no"
+    command: ["felony-api", "seed", "--if-empty", "data/seed"]
+    environment: *db-env
+    healthcheck: { disable: true }
+    depends_on:
+      db: { condition: service_healthy }
+
+  api:
+    <<: *hardening
+    image: ghcr.io/sbayer55/felony-bench:${IMAGE_TAG:-latest}
+    build: { context: ., target: api }
+    read_only: true
+    tmpfs: [/tmp]
+    environment:
+      <<: *db-env
+      ADMIN_TOKEN: ${ADMIN_TOKEN:?set ADMIN_TOKEN in .env}
+      IP_SALT: ${IP_SALT:?set IP_SALT in .env}
+      CORS_ORIGIN: ${CORS_ORIGIN:-}
+      TRUST_PROXY: "true"
+    networks: [internal, public] # approving a submission fetches its source URLs
+    depends_on:
+      seed: { condition: service_completed_successfully }
+
+  caddy:
+    <<: *hardening
+    image: caddy:2-alpine
+    environment:
+      DOMAIN: ${DOMAIN:?set DOMAIN in .env}
+      ACME_EMAIL: ${ACME_EMAIL:?set ACME_EMAIL in .env}
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    volumes:
+      - ./deploy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    networks: [internal, public]
+    depends_on:
+      api: { condition: service_healthy }
+
+  # Daily incident refresh. Provider keys (ANTHROPIC_API_KEY, ...) come from .env.
+  refresh:
+    <<: *hardening
+    image: ghcr.io/sbayer55/felony-bench-refresh:${IMAGE_TAG:-latest}
+    build: { context: ., target: refresh }
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      <<: *db-env
+      REFRESH_SCHEDULE: ${REFRESH_SCHEDULE:-17 6 * * *}
+      REFRESH_MAX: ${REFRESH_MAX:-10}
+    networks: [internal, public]
+    depends_on:
+      seed: { condition: service_completed_successfully }
+
+  backup:
+    <<: *hardening
+    image: postgres:17-alpine
+    entrypoint: ["/bin/sh", "/backup.sh"]
+    environment:
+      PGHOST: db
+      PGUSER: felony
+      PGDATABASE: felony
+      PGPASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}
+      BACKUP_HOUR: ${BACKUP_HOUR:-4}
+      BACKUP_KEEP_DAYS: ${BACKUP_KEEP_DAYS:-14}
+    volumes:
+      - ./deploy/backup.sh:/backup.sh:ro
+      - ./backups:/backups
+    depends_on:
+      db: { condition: service_healthy }
+
+networks:
+  # No outbound access: db and backup are only reachable from the stack.
+  internal:
+    internal: true
+  # Caddy needs ACME; api and refresh fetch source URLs (and refresh calls the model provider).
+  public:
+
+volumes:
+  pgdata:
+  caddy_data:
+  caddy_config:

@@ -38,7 +38,42 @@ With [just](https://github.com/casey/just) installed, `just setup && just dev` d
 | `pnpm test:api` | Rust tests. Integration tests need `DATABASE_URL` and create throwaway databases |
 | `pnpm build` | static SPA in `dist/` |
 | `pnpm db:export` | dump the database back to `data/seed/*.json` |
-| `docker compose up -d --build` | full stack: the API serves the SPA on :8787. Seed once with `docker compose run --rm api felony-api seed` |
+| `docker compose up -d --build` | local full stack: the API serves the SPA on :8787. Seed once with `docker compose run --rm api felony-api seed`. For production see [Deploy](#deploy) |
+
+## Deploy
+
+`compose.prod.yml` runs the whole thing on one Docker host:
+
+| Service | |
+|---|---|
+| `caddy` | HTTPS on :80/:443 with automatic Let's Encrypt certificates for `$DOMAIN`; the only service with published ports |
+| `api` | `ghcr.io/sbayer55/felony-bench`: the API plus the built SPA, read-only filesystem, health-checked |
+| `seed` | runs once per `up`: migrates, and imports `data/seed` only into a database that has never been seeded |
+| `db` | Postgres 17 on an internal network, data in the `pgdata` volume |
+| `refresh` | `ghcr.io/sbayer55/felony-bench-refresh`: the daily refresh on `$REFRESH_SCHEDULE` (cron, UTC) |
+| `backup` | nightly `pg_dump` into `./backups`, kept `$BACKUP_KEEP_DAYS` days |
+
+```bash
+# on the server, with Docker and DNS for your domain pointing at it
+git clone https://github.com/sbayer55/felony-bench && cd felony-bench
+cp .env.example .env    # fill in the Production block, plus ADMIN_TOKEN, IP_SALT, ANTHROPIC_API_KEY
+docker compose -f compose.prod.yml up -d
+```
+
+The site is at `https://$DOMAIN`, the review queue at `https://$DOMAIN/admin`. CI pushes images on every commit to `main` (tags `latest` and `sha-<commit>`, linux/amd64). Until the GHCR packages are made public, run `docker login ghcr.io` on the server, or add `--build` to build locally (also the way to get an arm64 image). `DOMAIN=localhost` tries the stack on your machine with a self-signed certificate.
+
+Each task has a `just prod-*` recipe (`just --list`), or run it directly:
+
+| Task | Command (prefix with `docker compose -f compose.prod.yml`) |
+|---|---|
+| Update | `pull && … up -d` (pin a version with `IMAGE_TAG=sha-…` in `.env`) |
+| Logs | `logs -f api refresh` |
+| Refresh now | `exec refresh tsx scripts/refresh-incidents.ts --dry-run`, then without the flag |
+| Back up now | `exec backup /bin/sh /backup.sh --once` |
+| Restore | `exec -T db pg_restore --clean --if-exists -U felony -d felony < backups/<file>.dump` |
+| Export to JSON | `exec api felony-api export /tmp/seed` then `cp` it out |
+
+When the refresh runs in the stack, leave the `DATABASE_URL` repository secret unset so the GitHub Actions refresh keeps skipping itself.
 
 ## API
 
@@ -72,7 +107,7 @@ Use the **Submit a felony** form on the site. Entries are reviewed before they g
 
 ## Automated refresh
 
-`.github/workflows/refresh.yml` runs daily at 06:17 UTC. It asks every configured LLM provider (Claude, Ollama, Bifrost, 9router; see below) to search the web for new sourced incidents, pools their candidates, then applies deterministic guardrails in `scripts/lib/pipeline.ts`:
+The refresh runs daily at 06:17 UTC, either in the `refresh` container of the production stack or from `.github/workflows/refresh.yml`. It asks every configured LLM provider (Claude, Ollama, Bifrost, 9router; see below) to search the web for new sourced incidents, pools their candidates, then applies deterministic guardrails in `scripts/lib/pipeline.ts`:
 
 - zod schema validation
 - duplicate detection against the docket (normalized source URL, or similar title within 30 days from the same provider)
@@ -89,6 +124,7 @@ What passes is inserted into Postgres in one transaction (the database re-checks
 - CLI: `gh workflow run refresh.yml -f max=10`
 - Locally: `DATABASE_URL=… ANTHROPIC_API_KEY=… pnpm refresh --dry-run`, then without the flag to write
 - Locally with Ollama: `DATABASE_URL=… OLLAMA_MODEL=qwen3:32b BRAVE_API_KEY=… pnpm refresh --dry-run`
+- Self-hosted stack: see [Deploy](#deploy)
 
 ### Providers
 
@@ -105,12 +141,15 @@ Claude uses Anthropic's server-side web search. Ollama, Bifrost and 9router go t
 
 To choose providers explicitly, set `REFRESH_PROVIDERS` or pass `--providers=`, e.g. `anthropic,bifrost,ollama:qwen3:32b`. A `name:model` entry overrides the model, so one provider can run twice with different models. Explicitly named providers that aren't configured are an error.
 
+In the production stack the `refresh` container reads these from `.env`. `localhost` there means the container itself, so point `*_BASE_URL` at `http://host.docker.internal:…` (add `extra_hosts: ["host.docker.internal:host-gateway"]` on Linux) or another reachable host.
+
 ### Setup
 
-- Host the Docker image and a Postgres database (the image runs migrations on start). Set `ADMIN_TOKEN`, `IP_SALT`, and `TRUST_PROXY=true` if it sits behind a reverse proxy.
-- Add a `DATABASE_URL` repository secret. The refresh workflow skips itself until `DATABASE_URL` exists.
-- Add repository secrets/variables for the refresh providers you want. API keys (`ANTHROPIC_API_KEY`, `*_API_KEY`, `BRAVE_API_KEY`) go in **secrets**; models, base URLs, `SEARCH_BACKEND`, `SEARXNG_URL` and `REFRESH_PROVIDERS` go in **variables**.
-- GitHub-hosted runners can't reach `localhost`. To use a local Ollama or 9router, register a self-hosted runner and set the `REFRESH_RUNNER` variable to its label, or point `*_BASE_URL` at a reachable host.
+- Self-hosting with `compose.prod.yml` runs the refresh inside the stack; nothing to set up on GitHub.
+- To run it from GitHub Actions instead (e.g. with a managed Postgres):
+  - Add a `DATABASE_URL` repository secret. The refresh workflow skips itself until `DATABASE_URL` exists.
+  - Add repository secrets/variables for the refresh providers you want. API keys (`ANTHROPIC_API_KEY`, `*_API_KEY`, `BRAVE_API_KEY`) go in **secrets**; models, base URLs, `SEARCH_BACKEND`, `SEARXNG_URL` and `REFRESH_PROVIDERS` go in **variables**.
+  - GitHub-hosted runners can't reach `localhost`. To use a local Ollama or 9router, register a self-hosted runner and set the `REFRESH_RUNNER` variable to its label, or point `*_BASE_URL` at a reachable host.
 - If the SPA is hosted separately from the API, build it with `VITE_API_URL=https://your-api` and set `CORS_ORIGIN` on the API.
 - Update `REPO_URL` in `src/data/index.ts` if the repository moves.
 

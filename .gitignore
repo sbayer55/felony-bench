@@ -28,3 +28,6 @@ dist-ssr
 
 # Rust
 api/target
+
+# Database dumps from compose.prod.yml
+backups
