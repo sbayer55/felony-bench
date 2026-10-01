@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { REPO_URL } from '../data'
+import { API_BASE, REPO_URL } from '../data'
 import { useDataStatus } from '../data/DataProvider'
 import { relativeTime } from '../lib/format'
 import styles from './Footer.module.css'
@@ -27,6 +27,7 @@ export function Footer() {
             )}
           </span>
           <Link to="/submit">Submit a felony</Link>
+          <a href={`${API_BASE}/feed.xml`}>RSS</a>
           <a href={REPO_URL} target="_blank" rel="noreferrer">
             Source
           </a>

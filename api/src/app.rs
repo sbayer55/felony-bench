@@ -59,7 +59,7 @@ pub fn router(state: AppState) -> Router {
         .fallback(|| async { ApiError::not_found() })
         .layer(DefaultBodyLimit::max(64 * 1024));
 
-    let mut app = Router::new().nest("/api", api);
+    let mut app = Router::new().route("/feed.xml", get(public::feed)).nest("/api", api);
     if let Some(dir) = &state.config.static_dir {
         app = app.fallback_service(ServeDir::new(dir).fallback(ServeFile::new(dir.join("index.html"))));
     }

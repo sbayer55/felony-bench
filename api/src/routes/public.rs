@@ -1,11 +1,13 @@
 use crate::app::AppState;
 use crate::error::{ApiError, ApiResult};
+use crate::feed;
 use crate::model::Incident;
 use axum::Json;
 use axum::extract::{Path, Query, State};
-use axum::http::{HeaderMap, HeaderValue, StatusCode, header};
+use axum::http::{HeaderMap, HeaderName, HeaderValue, StatusCode, header};
 use axum::response::{IntoResponse, Response};
 use serde::Deserialize;
+use sha2::{Digest, Sha256};
 
 const CACHE_CONTROL: &str = "public, max-age=60, stale-while-revalidate=600";
 
@@ -115,4 +117,48 @@ pub async fn incidents(State(s): State<AppState>, Query(f): Query<IncidentFilter
 pub async fn incident(State(s): State<AppState>, Path(id): Path<String>) -> ApiResult<Response> {
     let snap = s.cache.get();
     snap.incident(&id).map(cached).ok_or_else(ApiError::not_found)
+}
+
+/// Site origin for absolute feed links: PUBLIC_URL, else the request's Host.
+fn public_base(s: &AppState, headers: &HeaderMap) -> String {
+    if let Some(url) = &s.config.public_url {
+        return url.trim_end_matches('/').to_string();
+    }
+    let header = |name| headers.get(name).and_then(|v: &HeaderValue| v.to_str().ok());
+    let host = header(header::HOST).unwrap_or("localhost");
+    let proto = s
+        .config
+        .trust_proxy
+        .then(|| header(HeaderName::from_static("x-forwarded-proto")))
+        .flatten()
+        .and_then(|p| p.split(',').next())
+        .map(str::trim)
+        .filter(|p| *p == "https" || *p == "http")
+        .unwrap_or("http");
+    format!("{proto}://{host}")
+}
+
+/// RSS 2.0 feed of the newest incidents. Supports If-None-Match.
+pub async fn feed(State(s): State<AppState>, headers: HeaderMap) -> Response {
+    let snap = s.cache.get();
+    let base = public_base(&s, &headers);
+    let tag = Sha256::new().chain_update(&snap.etag).chain_update(&base).finalize();
+    let etag = format!("\"rss-{}\"", hex::encode(&tag[..12]));
+    let base_headers = [
+        (header::ETAG, HeaderValue::from_str(&etag).expect("etag is ascii")),
+        (header::CACHE_CONTROL, HeaderValue::from_static(CACHE_CONTROL)),
+    ];
+    let matches = headers
+        .get(header::IF_NONE_MATCH)
+        .and_then(|v| v.to_str().ok())
+        .is_some_and(|v| v.split(',').any(|t| t.trim() == etag || t.trim() == "*"));
+    if matches {
+        return (StatusCode::NOT_MODIFIED, base_headers).into_response();
+    }
+    (
+        base_headers,
+        [(header::CONTENT_TYPE, HeaderValue::from_static("application/rss+xml; charset=utf-8"))],
+        feed::render(&snap.data, &base),
+    )
+        .into_response()
 }
