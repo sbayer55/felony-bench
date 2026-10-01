@@ -17,6 +17,10 @@ on:
         description: Preview only, do not commit
         type: boolean
         default: false
+      providers:
+        description: 'Override provider detection, e.g. anthropic,ollama:qwen3:32b (blank = auto)'
+        default: ''
+        required: false
 
 permissions:
   contents: write
@@ -27,8 +31,10 @@ concurrency:
 
 jobs:
   refresh:
-    runs-on: ubuntu-latest
-    timeout-minutes: 20
+    # Hosted runners can't reach a localhost Ollama/Bifrost/9router; set REFRESH_RUNNER to a self-hosted label
+    # (or point *_BASE_URL at a reachable host).
+    runs-on: ${{ vars.REFRESH_RUNNER || 'ubuntu-latest' }}
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
@@ -40,8 +46,23 @@ jobs:
 
       - name: Research and validate
         id: refresh
+        # Providers are enabled by whichever of these are set; blanks are ignored. See scripts/lib/providers.ts.
         env:
+          REFRESH_PROVIDERS: ${{ github.event.inputs.providers || vars.REFRESH_PROVIDERS }}
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          ANTHROPIC_MODEL: ${{ vars.ANTHROPIC_MODEL }}
+          OLLAMA_MODEL: ${{ vars.OLLAMA_MODEL }}
+          OLLAMA_BASE_URL: ${{ vars.OLLAMA_BASE_URL }}
+          OLLAMA_API_KEY: ${{ secrets.OLLAMA_API_KEY }}
+          BIFROST_MODEL: ${{ vars.BIFROST_MODEL }}
+          BIFROST_BASE_URL: ${{ vars.BIFROST_BASE_URL }}
+          BIFROST_API_KEY: ${{ secrets.BIFROST_API_KEY }}
+          NINEROUTER_MODEL: ${{ vars.NINEROUTER_MODEL }}
+          NINEROUTER_BASE_URL: ${{ vars.NINEROUTER_BASE_URL }}
+          NINEROUTER_API_KEY: ${{ secrets.NINEROUTER_API_KEY }}
+          SEARCH_BACKEND: ${{ vars.SEARCH_BACKEND }}
+          BRAVE_API_KEY: ${{ secrets.BRAVE_API_KEY }}
+          SEARXNG_URL: ${{ vars.SEARXNG_URL }}
         run: |
           ARGS="--max=${{ github.event.inputs.max || '10' }}"
           if [ -n "${{ github.event.inputs.since }}" ]; then ARGS="$ARGS --since=${{ github.event.inputs.since }}"; fi

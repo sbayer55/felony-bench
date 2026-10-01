@@ -1,16 +1,20 @@
 /**
- * Daily refresh: ask Claude (with web search) for new, sourced incidents, run them through deterministic
- * checks, and append what survives. Append-only; never edits or removes existing entries.
+ * Daily refresh: ask every configured LLM provider (with web search) for new, sourced incidents, pool the
+ * candidates, run them through deterministic checks, and append what survives. Append-only; never edits or
+ * removes existing entries. Providers are detected from the environment; see scripts/lib/providers.ts.
  *
- *   pnpm refresh --dry-run            preview without writing
- *   pnpm refresh --max=5              cap additions this run
- *   pnpm refresh --since=2026-01-01   ignore candidates dated before
+ *   pnpm refresh --dry-run                           preview without writing
+ *   pnpm refresh --max=5                             cap additions this run
+ *   pnpm refresh --since=2026-01-01                  ignore candidates dated before
+ *   pnpm refresh --providers=anthropic,ollama:qwen3  use exactly these providers
  */
 import { readFileSync, writeFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { CATEGORIES, CATEGORY_DESCRIPTIONS, DEGREE_DESCRIPTIONS, EVIDENCE_CLASSES, EVIDENCE_DESCRIPTIONS, IncidentsFile, MetaSchema, ModelsFile, ProvidersFile, ROLES, ROLE_DESCRIPTIONS, crossCheck, type Incident, type Meta } from '../src/data/schema.ts'
-import { makeClient, research } from './lib/claude.ts'
 import { runPipeline } from './lib/pipeline.ts'
+import { buildProvider, describe, detectProviders } from './lib/providers.ts'
+import type { SubmitPayload } from './lib/research.ts'
+import { USER_AGENT } from './lib/web-tools.ts'
 
 const args = new Map<string, string>()
 for (const a of process.argv.slice(2)) {
@@ -21,6 +25,7 @@ const dryRun = args.get('dry-run') === 'true'
 const max = Number(args.get('max') ?? 10)
 const since = args.get('since')
 const maxSearches = Number(args.get('searches') ?? 30)
+const providersArg = args.get('providers')
 
 const dataDir = resolve(import.meta.dirname, '../src/data')
 const read = (name: string) => JSON.parse(readFileSync(resolve(dataDir, name), 'utf8'))
@@ -32,6 +37,16 @@ const existing = IncidentsFile.parse(read('incidents.json'))
 const meta = MetaSchema.parse(read('meta.json'))
 
 const log = (s: string) => console.log(`[refresh] ${s}`)
+
+let detection: ReturnType<typeof detectProviders>
+try {
+  detection = detectProviders(process.env, providersArg)
+} catch (e) {
+  console.error(`[refresh] ${(e as Error).message}`)
+  process.exit(1)
+}
+for (const w of detection.warnings) log(`WARN ${w}`)
+log(describe(detection))
 log(`${existing.length} incidents on file, ${models.length} models, ${providers.length} providers. dryRun=${dryRun} max=${max} since=${since ?? '-'}`)
 
 const today = new Date().toISOString().slice(0, 10)
@@ -79,7 +94,7 @@ ${digest || '(empty)'}`
 async function sourcesReachable(urls: string[]): Promise<boolean> {
   for (const url of urls) {
     try {
-      const res = await fetch(url, { method: 'GET', redirect: 'follow', headers: { 'user-agent': 'felony-bench-refresh/1.0 (+https://github.com/sbayer55/felony-bench)' }, signal: AbortSignal.timeout(15000) })
+      const res = await fetch(url, { method: 'GET', redirect: 'follow', headers: { 'user-agent': USER_AGENT }, signal: AbortSignal.timeout(15000) })
       if (res.status >= 400 && res.status !== 403 && res.status !== 429) {
         log(`source ${url} -> ${res.status}`)
         return false
@@ -92,13 +107,36 @@ async function sourcesReachable(urls: string[]): Promise<boolean> {
   return true
 }
 
-const client = makeClient()
-const payload = await research(client, system, prompt, { maxSearches, log })
-if (!payload) {
-  log('model ended without submitting; nothing to do')
+const researchers = detection.providers.map((spec) => buildProvider(spec, detection.search))
+const settled = await Promise.allSettled(
+  researchers.map((p) => p.research(system, prompt, { maxSearches, log: (s) => console.log(`[refresh:${p.label}] ${s}`) })),
+)
+
+const payloads: SubmitPayload[] = []
+settled.forEach((r, i) => {
+  const label = researchers[i].label
+  if (r.status === 'rejected') log(`${label} FAILED: ${(r.reason as Error)?.message ?? r.reason}`)
+  else if (!r.value) log(`${label} ended without submitting`)
+  else {
+    log(`${label} submitted ${r.value.incidents.length} candidate(s), ${r.value.candidateModels.length} candidate model(s)`)
+    payloads.push(r.value)
+  }
+})
+if (settled.every((r) => r.status === 'rejected')) {
+  log('every provider failed')
+  process.exit(1)
+}
+if (!payloads.length) {
+  log('no provider submitted; nothing to do')
   process.exit(0)
 }
-log(`model submitted ${payload.incidents.length} candidate(s), ${payload.candidateModels.length} candidate model(s)`)
+
+// Round-robin so one provider can't fill the per-run cap on its own.
+const pooled: unknown[] = []
+for (let k = 0; payloads.some((p) => k < p.incidents.length); k++) {
+  for (const p of payloads) if (k < p.incidents.length) pooled.push(p.incidents[k])
+}
+const payload: SubmitPayload = { incidents: pooled, candidateModels: payloads.flatMap((p) => p.candidateModels) }
 
 const result = await runPipeline({
   candidates: payload.incidents,
