@@ -39,6 +39,10 @@
   --c8: #e34948;
   --chart-grid: #e3e0d8;
   --chart-ink: #4a4843;
+  /* Degree ramp: one hue (the accent), ordinal, validated light→dark against the surface. --deg3 is first degree. */
+  --deg1: #dd9d9a;
+  --deg2: #c8635d;
+  --deg3: #b3261e;
 
   --font-sans: 'IBM Plex Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
   --font-mono: 'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
@@ -90,6 +94,9 @@
     --c8: #e66767;
     --chart-grid: #2d2b26;
     --chart-ink: #c3bfb5;
+    --deg1: #883c35;
+    --deg2: #b34941;
+    --deg3: #e0574d;
     --shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
 
     color-scheme: dark;
@@ -133,6 +140,9 @@
   --c8: #e66767;
   --chart-grid: #2d2b26;
   --chart-ink: #c3bfb5;
+  --deg1: #883c35;
+  --deg2: #b34941;
+  --deg3: #e0574d;
   --shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
 
   color-scheme: dark;

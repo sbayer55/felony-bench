@@ -7,6 +7,7 @@ import { ScrollToTop } from './components/ScrollToTop'
 import { LeaderboardPage } from './pages/LeaderboardPage'
 import { IncidentsPage } from './pages/IncidentsPage'
 import { IncidentPage } from './pages/IncidentPage'
+import { ExhibitsPage } from './pages/ExhibitsPage'
 import { MethodologyPage } from './pages/MethodologyPage'
 import { AboutPage } from './pages/AboutPage'
 import { SubmitPage } from './pages/SubmitPage'
@@ -26,6 +27,7 @@ export default function App() {
               <Route path="/" element={<LeaderboardPage />} />
               <Route path="/docket" element={<IncidentsPage />} />
               <Route path="/docket/:id" element={<IncidentPage />} />
+              <Route path="/exhibits" element={<ExhibitsPage />} />
               <Route path="/submit" element={<SubmitPage />} />
               <Route path="/admin" element={<AdminPage />} />
             </Route>
