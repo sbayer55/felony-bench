@@ -48,6 +48,7 @@
 
 .segment button:hover {
   background: var(--surface-2);
+  color: var(--fg-2);
 }
 
 .segment .on {
