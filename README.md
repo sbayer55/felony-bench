@@ -15,6 +15,7 @@ scripts/refresh-incidents.ts (daily) ─── inserts + NOTIFY ─────�
 - **Postgres is the source of truth.** The schema lives in `api/migrations/`. Foreign keys and deferred triggers enforce the same referential rules as `crossCheck` in `src/data/schema.ts`.
 - **The API keeps the whole dataset in memory.** It serves `/api/bootstrap` pre-serialized and pre-compressed (brotli/gzip, ETag + 304), so public reads never touch the database. The snapshot is swapped atomically whenever `NOTIFY data_changed` fires. On a laptop that's about 55k req/s for the full dataset in ~60 MB of RAM.
 - **The SPA fetches `/api/bootstrap` once** and scores everything client-side (`src/lib/score.ts`).
+- **RSS:** `/feed.xml` lists the 50 newest incidents, rendered from the same snapshot. Links use `PUBLIC_URL`, or the request's Host when that is unset.
 - **Public submissions** go into a review queue. Admins approve or reject them at `/admin`, and approval runs the same pipeline as the daily refresh.
 
 ## Run it

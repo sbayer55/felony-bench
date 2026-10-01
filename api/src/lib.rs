@@ -4,6 +4,7 @@ pub mod config;
 pub mod dedupe;
 pub mod enums;
 pub mod error;
+pub mod feed;
 pub mod limit;
 pub mod model;
 pub mod pipeline;

@@ -440,3 +440,33 @@ async fn is_empty_tracks_first_seed(pool: PgPool) {
     seed::import(&pool, &seed_dir()).await.unwrap();
     assert!(!seed::is_empty(&pool).await.unwrap());
 }
+
+#[sqlx::test(migrations = "./migrations")]
+async fn feed_lists_newest_incidents_as_rss(pool: PgPool) {
+    let app = app(&pool, true).await;
+    let (_, _, incidents) = seed::read_dir(&seed_dir()).unwrap();
+
+    let res = send(&app, "GET", "/feed.xml", None, &[("host", "bench.example")], "10.0.0.1").await;
+    assert_eq!(res.status, StatusCode::OK);
+    assert_eq!(res.headers[header::CONTENT_TYPE], "application/rss+xml; charset=utf-8");
+    let xml = String::from_utf8(res.body).unwrap();
+    assert!(xml.starts_with(r#"<?xml version="1.0" encoding="UTF-8"?><rss version="2.0""#));
+    assert!(xml.contains(r#"<atom:link href="http://bench.example/feed.xml""#));
+    assert_eq!(xml.matches("<item>").count(), incidents.len().min(felony_api::feed::FEED_ITEMS));
+    let newest = incidents.iter().max_by(|a, b| a.body.date.cmp(&b.body.date)).unwrap();
+    let first_link = format!("<link>http://bench.example/docket/{}</link>", incidents[0].id);
+    assert!(xml.contains(&first_link));
+    assert_eq!(incidents[0].body.date, newest.body.date);
+
+    let etag = res.headers[header::ETAG].to_str().unwrap().to_string();
+    let not_modified = send(
+        &app,
+        "GET",
+        "/feed.xml",
+        None,
+        &[("host", "bench.example"), ("if-none-match", &etag)],
+        "10.0.0.1",
+    )
+    .await;
+    assert_eq!(not_modified.status, StatusCode::NOT_MODIFIED);
+}

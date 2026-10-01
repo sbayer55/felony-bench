@@ -54,6 +54,7 @@ services:
       IP_SALT: ${IP_SALT:?set IP_SALT in .env}
       CORS_ORIGIN: ${CORS_ORIGIN:-}
       TRUST_PROXY: "true"
+      PUBLIC_URL: https://${DOMAIN}
     networks: [internal, public] # approving a submission fetches its source URLs
     depends_on:
       seed: { condition: service_completed_successfully }

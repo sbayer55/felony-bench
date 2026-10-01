@@ -26,6 +26,10 @@ pub struct Config {
     /// Public submissions allowed per IP per hour.
     #[arg(long, env = "SUBMIT_PER_HOUR", default_value_t = 5)]
     pub submit_per_hour: usize,
+    /// Public site URL used for absolute links in /feed.xml, e.g. https://felonybench.example. Derived from the
+    /// request's Host (and X-Forwarded-Proto when TRUST_PROXY is set) when unset.
+    #[arg(long, env = "PUBLIC_URL")]
+    pub public_url: Option<String>,
     /// Safety-net snapshot reload interval, in seconds, on top of LISTEN/NOTIFY.
     #[arg(long, env = "RELOAD_SECS", default_value_t = 300)]
     pub reload_secs: u64,
@@ -42,6 +46,7 @@ impl Config {
             static_dir: None,
             trust_proxy: false,
             submit_per_hour: 5,
+            public_url: None,
             reload_secs: 300,
         }
     }
