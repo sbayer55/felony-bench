@@ -29,6 +29,8 @@ pnpm db:seed            # migrate + import data/seed/*.json (idempotent)
 pnpm dev                # Vite on :5173 + API on :8787 (/api is proxied)
 ```
 
+With [just](https://github.com/casey/just) installed, `just setup && just dev` does the same. Run `just` to see every recipe; `just ci` runs the checks CI runs.
+
 | Command | What |
 |---|---|
 | `pnpm check` | typecheck + validate the seed JSON |
@@ -103,7 +105,7 @@ Use the **Submit a felony** form on the site. Entries are reviewed before they g
 
 ## Automated refresh
 
-The refresh runs daily at 06:17 UTC, either in the `refresh` container of the production stack or from `.github/workflows/refresh.yml`. It calls Claude with web search, asks for new sourced incidents, then applies deterministic guardrails in `scripts/lib/pipeline.ts`:
+The refresh runs daily at 06:17 UTC, either in the `refresh` container of the production stack or from `.github/workflows/refresh.yml`. It asks every configured LLM provider (Claude, Ollama, Bifrost, 9router; see below) to search the web for new sourced incidents, pools their candidates, then applies deterministic guardrails in `scripts/lib/pipeline.ts`:
 
 - zod schema validation
 - duplicate detection against the docket (normalized source URL, or similar title within 30 days from the same provider)
@@ -116,18 +118,39 @@ What passes is inserted into Postgres in one transaction (the database re-checks
 
 ### Trigger it by hand
 
-- GitHub: **Actions → Refresh incidents → Run workflow** (inputs: `max`, `since`, `dry_run`)
+- GitHub: **Actions → Refresh incidents → Run workflow** (inputs: `max`, `since`, `dry_run`, `providers`)
 - CLI: `gh workflow run refresh.yml -f max=10`
 - Locally: `DATABASE_URL=… ANTHROPIC_API_KEY=… pnpm refresh --dry-run`, then without the flag to write
+- Locally with Ollama: `DATABASE_URL=… OLLAMA_MODEL=qwen3:32b BRAVE_API_KEY=… pnpm refresh --dry-run`
 - Self-hosted stack: see [Deploy](#deploy)
+
+### Providers
+
+The script enables every provider whose config it finds in the environment and runs them in parallel. Their candidates are interleaved and go through the same guardrails, so duplicates across providers are dropped. One provider failing doesn't stop the others; the run fails only if all of them fail.
+
+| Provider | Enabled by | Optional |
+|---|---|---|
+| Anthropic | `ANTHROPIC_API_KEY` | `ANTHROPIC_MODEL` (default `claude-opus-5-5`) |
+| Ollama | `OLLAMA_MODEL` | `OLLAMA_BASE_URL` (default `http://localhost:11434/v1`), `OLLAMA_API_KEY` |
+| Bifrost | `BIFROST_MODEL` (e.g. `openai/gpt-…`) | `BIFROST_BASE_URL` (default `http://localhost:8080/v1`), `BIFROST_API_KEY` |
+| 9router | `NINEROUTER_MODEL` | `NINEROUTER_BASE_URL` (default `http://localhost:20128/v1`), `NINEROUTER_API_KEY` |
+
+Claude uses Anthropic's server-side web search. Ollama, Bifrost and 9router go through their OpenAI-compatible `/chat/completions` endpoint, and the script runs search and fetch for them, using the first search backend it finds: `BRAVE_API_KEY` (Brave Search), `SEARXNG_URL` (a SearXNG instance), or `OLLAMA_API_KEY` (Ollama web search). Set `SEARCH_BACKEND=brave|searxng|ollama` to pick one. A gateway with no search backend is skipped with a warning.
+
+To choose providers explicitly, set `REFRESH_PROVIDERS` or pass `--providers=`, e.g. `anthropic,bifrost,ollama:qwen3:32b`. A `name:model` entry overrides the model, so one provider can run twice with different models. Explicitly named providers that aren't configured are an error.
+
+In the production stack the `refresh` container reads these from `.env`. `localhost` there means the container itself, so point `*_BASE_URL` at `http://host.docker.internal:…` (add `extra_hosts: ["host.docker.internal:host-gateway"]` on Linux) or another reachable host.
 
 ### Setup
 
 - Self-hosting with `compose.prod.yml` runs the refresh inside the stack; nothing to set up on GitHub.
-- To run it from GitHub Actions instead (e.g. with a managed Postgres), add `DATABASE_URL` and `ANTHROPIC_API_KEY` repository secrets. The workflow skips itself until `DATABASE_URL` exists.
+- To run it from GitHub Actions instead (e.g. with a managed Postgres):
+  - Add a `DATABASE_URL` repository secret. The refresh workflow skips itself until `DATABASE_URL` exists.
+  - Add repository secrets/variables for the refresh providers you want. API keys (`ANTHROPIC_API_KEY`, `*_API_KEY`, `BRAVE_API_KEY`) go in **secrets**; models, base URLs, `SEARCH_BACKEND`, `SEARXNG_URL` and `REFRESH_PROVIDERS` go in **variables**.
+  - GitHub-hosted runners can't reach `localhost`. To use a local Ollama or 9router, register a self-hosted runner and set the `REFRESH_RUNNER` variable to its label, or point `*_BASE_URL` at a reachable host.
 - If the SPA is hosted separately from the API, build it with `VITE_API_URL=https://your-api` and set `CORS_ORIGIN` on the API.
 - Update `REPO_URL` in `src/data/index.ts` if the repository moves.
 
 ## Stack
 
-Frontend: Vite, React 19, TypeScript, CSS Modules, React Router, Recharts, zod. API: Rust, tokio, axum, sqlx, Postgres. The refresh script uses the Anthropic TypeScript SDK with the web search and web fetch server tools, and postgres.js.
+Frontend: Vite, React 19, TypeScript, CSS Modules, React Router, Recharts, zod. API: Rust, tokio, axum, sqlx, Postgres. The refresh script uses the Anthropic TypeScript SDK with the web search and web fetch server tools, plain `fetch` against OpenAI-compatible endpoints for the other providers, and postgres.js.
