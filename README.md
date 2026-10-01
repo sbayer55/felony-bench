@@ -29,6 +29,8 @@ pnpm db:seed            # migrate + import data/seed/*.json (idempotent)
 pnpm dev                # Vite on :5173 + API on :8787 (/api is proxied)
 ```
 
+With [just](https://github.com/casey/just) installed, `just setup && just dev` does the same. Run `just` to see every recipe; `just ci` runs the checks CI runs.
+
 | Command | What |
 |---|---|
 | `pnpm check` | typecheck + validate the seed JSON |
