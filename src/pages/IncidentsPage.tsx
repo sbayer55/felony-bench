@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
 import { useSearchParams } from 'react-router-dom'
-import { incidents, modelById, providerById, providers } from '../data'
+import { useData } from '../data/DataProvider'
 import { CATEGORIES, type Category } from '../data/schema'
 import { byDateDesc, filterIncidents } from '../lib/score'
 import { useFilters } from '../lib/useFilters'
@@ -9,6 +9,7 @@ import { IncidentCard } from '../components/IncidentCard'
 import styles from './IncidentsPage.module.css'
 
 export function IncidentsPage() {
+  const { incidents, providers, modelById, providerById } = useData()
   const { state, update, reset, active } = useFilters()
   const [params, setParams] = useSearchParams()
   const modelFocus = params.get('m')
@@ -25,19 +26,19 @@ export function IncidentsPage() {
         return hay.includes(q)
       })
       .sort(byDateDesc)
-  }, [state, modelFocus])
+  }, [incidents, modelById, providerById, state, modelFocus])
 
   const providerCounts = useMemo(() => {
     const m = new Map<string, number>()
     for (const inc of filterIncidents(incidents, { categories: state.categories, evidence: state.evidence })) for (const p of inc.providerIds) m.set(p, (m.get(p) ?? 0) + 1)
     return m
-  }, [state.categories, state.evidence])
+  }, [incidents, state.categories, state.evidence])
 
   const categoryCounts = useMemo(() => {
     const out = Object.fromEntries(CATEGORIES.map((c) => [c, 0])) as Record<Category, number>
     for (const inc of filterIncidents(incidents, { evidence: state.evidence })) out[inc.category] += 1
     return out
-  }, [state.evidence])
+  }, [incidents, state.evidence])
 
   const focusName = modelFocus ? modelById.get(modelFocus)?.name : providerFocus ? providerById.get(providerFocus)?.name : null
 

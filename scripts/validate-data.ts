@@ -1,9 +1,10 @@
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { z } from 'zod'
-import { IncidentsFile, MetaSchema, ModelsFile, ProvidersFile, crossCheck } from '../src/data/schema.ts'
+import { IncidentsFile, ModelsFile, ProvidersFile, crossCheck } from '../src/data/schema.ts'
 
-const dataDir = resolve(import.meta.dirname, '../src/data')
+// The seed snapshot in data/seed (the database is the source of truth; `felony-api export` refreshes these files).
+const dataDir = resolve(import.meta.dirname, '../data/seed')
 const load = (name: string) => JSON.parse(readFileSync(resolve(dataDir, name), 'utf8'))
 
 function parse<T>(schema: z.ZodType<T>, value: unknown, label: string): T | null {
@@ -18,9 +19,8 @@ function parse<T>(schema: z.ZodType<T>, value: unknown, label: string): T | null
 const providers = parse(ProvidersFile, load('providers.json'), 'providers.json')
 const models = parse(ModelsFile, load('models.json'), 'models.json')
 const incidents = parse(IncidentsFile, load('incidents.json'), 'incidents.json')
-const meta = parse(MetaSchema, load('meta.json'), 'meta.json')
 
-let failed = !providers || !models || !incidents || !meta
+let failed = !providers || !models || !incidents
 if (providers && models && incidents) {
   const errors = crossCheck(providers, models, incidents)
   for (const e of errors) console.error(e)

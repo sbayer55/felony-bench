@@ -1,0 +1,39 @@
+# Local stack: Postgres + the API (which also serves the SPA on :8787).
+#   cp .env.example .env   # set ADMIN_TOKEN
+#   docker compose up -d --build
+#   docker compose run --rm api felony-api seed
+# For frontend development, run only the database (`pnpm db:up`) and use `pnpm dev`.
+services:
+  db:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: felony
+      POSTGRES_PASSWORD: felony
+      POSTGRES_DB: felony
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U felony -d felony"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+
+  api:
+    build: .
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgres://felony:felony@db:5432/felony
+      ADMIN_TOKEN: ${ADMIN_TOKEN:-}
+      IP_SALT: ${IP_SALT:-change-me}
+      CORS_ORIGIN: ${CORS_ORIGIN:-}
+      TRUST_PROXY: ${TRUST_PROXY:-false}
+    ports:
+      - "8787:8787"
+    restart: unless-stopped
+
+volumes:
+  pgdata:
