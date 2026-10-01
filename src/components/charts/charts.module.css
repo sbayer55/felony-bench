@@ -40,3 +40,251 @@
   text-align: center;
   color: var(--muted);
 }
+
+.exhibit {
+  display: inline-block;
+  margin-right: 8px;
+  padding: 1px 6px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius);
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+  vertical-align: 1px;
+}
+
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 16px;
+  margin-bottom: 10px;
+  font-size: 12px;
+  color: var(--fg-2);
+}
+
+.legendItem {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.legendValue {
+  color: var(--fg);
+  font-weight: 500;
+}
+
+.swatch {
+  flex: none;
+  display: inline-block;
+}
+
+.square {
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+}
+
+.line {
+  width: 14px;
+  height: 2px;
+  border-radius: 1px;
+}
+
+.dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+}
+
+.legendSep {
+  width: 1px;
+  align-self: stretch;
+  background: var(--line);
+}
+
+.tableView {
+  margin: 6px 0 4px;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.tableView summary {
+  cursor: pointer;
+  width: max-content;
+}
+
+.tableView summary:hover {
+  color: var(--fg);
+}
+
+.tableScroll {
+  max-height: 320px;
+  overflow: auto;
+  margin-top: 8px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+}
+
+.tableView table {
+  width: 100%;
+  border-collapse: collapse;
+  color: var(--fg);
+}
+
+.tableView th,
+.tableView td {
+  padding: 4px 10px;
+  border-bottom: 1px solid var(--line);
+  text-align: left;
+  white-space: nowrap;
+}
+
+.tableView thead th {
+  position: sticky;
+  top: 0;
+  background: var(--surface-2);
+  color: var(--muted);
+  font-weight: 500;
+}
+
+.tableView tbody th {
+  font-weight: 500;
+}
+
+.tableView td.mono,
+.tableView td:global(.mono) {
+  text-align: right;
+}
+
+.tip {
+  position: absolute;
+  z-index: 2;
+  pointer-events: none;
+  max-width: 280px;
+  padding: 8px 10px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  box-shadow: var(--shadow);
+  font-size: 12px;
+  color: var(--fg);
+}
+
+.tipMeta {
+  display: block;
+  margin-bottom: 2px;
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 11px;
+}
+
+.tipTitle {
+  display: block;
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+.timeline {
+  position: relative;
+  width: 100%;
+  min-width: 0;
+}
+
+.timeline svg {
+  display: block;
+  overflow: visible;
+}
+
+.dotLink {
+  cursor: pointer;
+}
+
+.dotLink:focus-visible {
+  outline: none;
+}
+
+.ramp {
+  display: inline-block;
+  width: 72px;
+  height: 8px;
+  border-radius: 2px;
+  background: linear-gradient(to right, color-mix(in srgb, var(--accent) 18%, var(--surface)), var(--accent));
+}
+
+.matrixScroll {
+  overflow-x: auto;
+  padding-bottom: 6px;
+}
+
+.matrix {
+  display: grid;
+  gap: 2px;
+  min-width: max-content;
+  font-size: 12px;
+}
+
+.matrixRow {
+  display: contents;
+}
+
+.corner {
+  min-width: 0;
+}
+
+.colHead {
+  padding: 0 2px 4px;
+  color: var(--muted);
+  font-size: 11px;
+  text-align: center;
+  white-space: nowrap;
+  cursor: help;
+}
+
+.totalHead {
+  cursor: default;
+}
+
+.rowHead {
+  display: flex;
+  align-items: center;
+  padding-right: 12px;
+  color: var(--fg-2);
+  white-space: nowrap;
+}
+
+.cell {
+  display: grid;
+  place-items: center;
+  height: 28px;
+  border-radius: 3px;
+  font-size: 12px;
+  font-weight: 600;
+  text-decoration: none !important;
+  transition: box-shadow 80ms;
+}
+
+a.cell:hover,
+a.cell:focus-visible {
+  box-shadow: inset 0 0 0 2px var(--fg);
+  outline: none;
+}
+
+.cellEmpty {
+  background: var(--surface-2);
+  color: var(--line-strong);
+  font-weight: 400;
+}
+
+.total {
+  color: var(--fg-2);
+  font-weight: 500;
+}
+
+.footRow > * {
+  border-top: 1px solid var(--line);
+  border-radius: 0;
+  color: var(--muted);
+}

@@ -5,6 +5,7 @@ import styles from './Header.module.css'
 const nav = [
   { to: '/', label: 'Leaderboard', end: true },
   { to: '/docket', label: 'Docket' },
+  { to: '/exhibits', label: 'Exhibits' },
   { to: '/methodology', label: 'Methodology' },
   { to: '/about', label: 'About' },
 ]
