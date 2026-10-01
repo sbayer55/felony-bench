@@ -14,7 +14,6 @@ if [ ! -x "$COMPOSE" ]; then
   curl -fsSL -o "$COMPOSE" "https://github.com/docker/compose/releases/latest/download/docker-compose-linux-$(uname -m)"
   chmod +x "$COMPOSE"
 fi
-systemctl enable --now docker
 
 # --- swap: 2 GB headroom for Postgres + API + refresh on a 2 GB instance ---
 if [ ! -f /swapfile ]; then
@@ -25,7 +24,7 @@ if [ ! -f /swapfile ]; then
 fi
 swapon -a
 
-# --- data volume (Postgres, Caddy certs, secrets). Nitro exposes it as NVMe, named by volume id ---
+# --- data volume (Docker volumes and images, backups, secrets). Nitro exposes it as NVMe, named by volume id ---
 DEV="/dev/disk/by-id/nvme-Amazon_Elastic_Block_Store_${VOLUME_ID//-/}"
 for _ in $(seq 1 60); do [ -e "$DEV" ] && break; sleep 5; done
 [ -e "$DEV" ] || { echo "data volume $VOLUME_ID never attached"; exit 1; }
@@ -35,7 +34,12 @@ mkdir -p /data
 grep -q "$UUID" /etc/fstab || echo "UUID=$UUID /data xfs defaults,nofail 0 2" >> /etc/fstab
 mountpoint -q /data || mount /data
 
-# --- secrets, generated once and kept on the data volume ---
+# --- Docker keeps its volumes (pgdata, Caddy certs) and images on the data volume ---
+mkdir -p /etc/docker /data/docker
+[ -f /etc/docker/daemon.json ] || echo '{"data-root": "/data/docker"}' > /etc/docker/daemon.json
+systemctl enable --now docker
+
+# --- secrets for compose.prod.yml, generated once and kept on the data volume ---
 ENV_FILE=/data/felony/.env
 if [ ! -f "$ENV_FILE" ]; then
   mkdir -p /data/felony
@@ -43,11 +47,10 @@ if [ ! -f "$ENV_FILE" ]; then
   cat > "$ENV_FILE" <<EOF
 DOMAIN=$DOMAIN
 ACME_EMAIL=$ACME_EMAIL
-IMAGE=ghcr.io/${GITHUB_REPO,,}
-TAG=latest
 POSTGRES_PASSWORD=$(openssl rand -hex 24)
 ADMIN_TOKEN=$(openssl rand -hex 24)
 IP_SALT=$(openssl rand -hex 24)
+IMAGE_TAG=latest
 EOF
   umask 022
 fi
@@ -57,4 +60,8 @@ if [ ! -d /opt/felony/src/.git ]; then
   mkdir -p /opt/felony
   git clone "https://github.com/$GITHUB_REPO.git" /opt/felony/src
 fi
+# compose.prod.yml reads ./.env and writes ./backups; both live on the data volume.
+mkdir -p /data/backups
+ln -sfn /data/felony/.env /opt/felony/src/.env
+ln -sfn /data/backups /opt/felony/src/backups
 /opt/felony/src/deploy/deploy.sh latest

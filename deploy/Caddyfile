@@ -1,8 +1,11 @@
+# TLS termination for compose.prod.yml. Caddy gets and renews certificates for $DOMAIN automatically
+# (DOMAIN=localhost uses a locally trusted self-signed certificate instead).
 {
 	email {$ACME_EMAIL}
 }
 
 {$DOMAIN} {
-	encode zstd gzip
+	# The API compresses and sets its own headers. Caddy overwrites any client-sent X-Forwarded-For,
+	# so the API (TRUST_PROXY=true, rightmost entry) sees the real client address.
 	reverse_proxy api:8787
 }

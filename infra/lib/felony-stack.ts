@@ -14,7 +14,7 @@ export interface FelonyStackProps extends StackProps {
   hostedZoneName: string
   /** Contact address for Let's Encrypt. */
   acmeEmail: string
-  /** owner/name on GitHub: cloned onto the box, images pulled from ghcr.io/owner/name. */
+  /** owner/name on GitHub, cloned onto the box (compose.prod.yml names the GHCR images). */
   githubRepo: string
   /** False when the account already has GitHub's OIDC provider (only one is allowed per account). */
   createOidcProvider: boolean
@@ -50,7 +50,7 @@ export class FelonyStack extends Stack {
       assumedBy: new iam.ServicePrincipal('ec2.amazonaws.com'),
       managedPolicies: [iam.ManagedPolicy.fromAwsManagedPolicyName('AmazonSSMManagedInstanceCore')],
     })
-    // Refresh provider keys (SecureString, default aws/ssm key) live under /felony-bench/env/.
+    // Refresh provider settings (SecureString, default aws/ssm key) under /felony-bench/env/, copied into .env on deploy.
     role.addToPolicy(new iam.PolicyStatement({
       actions: ['ssm:GetParametersByPath', 'ssm:GetParameters', 'ssm:GetParameter'],
       resources: [this.formatArn({ service: 'ssm', resource: 'parameter', resourceName: 'felony-bench/*' })],

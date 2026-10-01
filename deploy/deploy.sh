@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-# Deploy a commit: deploy.sh <git sha>, or deploy.sh latest for main.
-# Run as root on the host by first boot (user data) and by CI through SSM Run Command.
+# Deploy compose.prod.yml at a commit on the EC2 host (infra/): deploy.sh <git sha>, or deploy.sh latest for main.
+# Run as root by first boot (user data) and by CI through SSM Run Command. CI tags images sha-<7-char sha>.
 set -euo pipefail
 # cloud-init and SSM Run Command may start without HOME; docker and git want one.
 export HOME="${HOME:-/root}"
@@ -20,21 +20,35 @@ if [ "${2:-}" != "--checked-out" ]; then
   exec "$SRC/deploy/deploy.sh" "$REF" --checked-out
 fi
 
-DC="$SRC/deploy/dc"
-echo "[deploy] $(git -C "$SRC" rev-parse --short HEAD) image tag $REF"
+if [ "$REF" = latest ]; then TAG=latest; else TAG="sha-${REF:0:7}"; fi
+echo "[deploy] $(git -C "$SRC" rev-parse --short HEAD), images $TAG"
 
-sed -i "s/^TAG=.*/TAG=$REF/" "$ENV_FILE"
-mkdir -p /data/pgdata /data/caddy/data /data/caddy/config
+# set_env NAME VALUE: replace or append one line in .env (written in place: .env is a symlink).
+set_env() {
+  local tmp
+  tmp="$(mktemp)"
+  grep -v "^$1=" "$ENV_FILE" > "$tmp" || true
+  printf '%s=%s\n' "$1" "$2" >> "$tmp"
+  cat "$tmp" > "$ENV_FILE"
+  rm -f "$tmp"
+}
+set_env IMAGE_TAG "$TAG"
 
-install -m 0644 "$SRC"/deploy/systemd/felony-refresh.* /etc/systemd/system/
-systemctl daemon-reload
-systemctl enable --quiet --now felony-refresh.timer
+# Refresh provider settings: every SSM parameter under /felony-bench/env/ becomes a .env line
+# named after its last path segment (e.g. /felony-bench/env/ANTHROPIC_API_KEY).
+IMDS=http://169.254.169.254/latest
+TOKEN="$(curl -fsS -X PUT -H 'X-aws-ec2-metadata-token-ttl-seconds: 60' "$IMDS/api/token")"
+AWS_DEFAULT_REGION="$(curl -fsS -H "X-aws-ec2-metadata-token: $TOKEN" "$IMDS/meta-data/placement/region")"
+export AWS_DEFAULT_REGION
+while IFS=$'\t' read -r name value; do
+  if [ -n "$name" ]; then set_env "${name##*/}" "$value"; fi
+done < <(aws ssm get-parameters-by-path --path /felony-bench/env/ --with-decryption \
+  --query 'Parameters[].[Name,Value]' --output text)
 
-"$DC" pull --quiet
-"$DC" up -d --remove-orphans
+DC=(docker compose --project-directory "$SRC" -f "$SRC/compose.prod.yml")
+"${DC[@]}" pull --quiet
+"${DC[@]}" up -d --wait --remove-orphans
 # Caddy doesn't watch its bind-mounted config.
-"$DC" exec -T caddy caddy reload --config /etc/caddy/Caddyfile || true
-# Migrations run when the API starts; seeding only inserts rows that don't exist yet.
-"$DC" run --rm api felony-api seed
+"${DC[@]}" exec -T caddy caddy reload --config /etc/caddy/Caddyfile || true
 docker image prune -f >/dev/null
 echo "[deploy] done"
