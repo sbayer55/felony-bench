@@ -5,3 +5,4 @@ dist
 api/target
 .env
 *.log
+backups

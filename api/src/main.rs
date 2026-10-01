@@ -1,3 +1,4 @@
+use anyhow::Context;
 use clap::{Parser, Subcommand};
 use felony_api::app::{AppState, router};
 use felony_api::cache::Cache;
@@ -15,7 +16,7 @@ use tracing_subscriber::EnvFilter;
 #[command(name = "felony-api", about = "Felony Bench API")]
 struct Cli {
     #[arg(long, env = "DATABASE_URL", hide_env_values = true)]
-    database_url: String,
+    database_url: Option<String>,
     #[command(subcommand)]
     command: Command,
 }
@@ -30,11 +31,19 @@ enum Command {
     Seed {
         #[arg(default_value = "data/seed")]
         dir: PathBuf,
+        /// Only import into a database that has never been seeded (used on every container start).
+        #[arg(long)]
+        if_empty: bool,
     },
     /// Write the database back out as JSON in the seed format.
     Export {
         #[arg(default_value = "data/seed")]
         dir: PathBuf,
+    },
+    /// Exit 0 if the local server answers /api/health. For container healthchecks; needs no DATABASE_URL.
+    Healthcheck {
+        #[arg(long, env = "PORT", default_value_t = 8787)]
+        port: u16,
     },
 }
 
@@ -45,10 +54,14 @@ async fn main() -> anyhow::Result<()> {
         .init();
     dotenvy::dotenv().ok();
     let cli = Cli::parse();
+    if let Command::Healthcheck { port } = cli.command {
+        return healthcheck(port).await;
+    }
+    let database_url = cli.database_url.context("DATABASE_URL is not set")?;
     let pool = PgPoolOptions::new()
         .max_connections(10)
         .acquire_timeout(Duration::from_secs(10))
-        .connect(&cli.database_url)
+        .connect(&database_url)
         .await?;
 
     match cli.command {
@@ -56,8 +69,12 @@ async fn main() -> anyhow::Result<()> {
             MIGRATOR.run(&pool).await?;
             tracing::info!("migrations applied");
         }
-        Command::Seed { dir } => {
+        Command::Seed { dir, if_empty } => {
             MIGRATOR.run(&pool).await?;
+            if if_empty && !seed::is_empty(&pool).await? {
+                tracing::info!("database already seeded; skipping");
+                return Ok(());
+            }
             let n = seed::import(&pool, &dir).await?;
             tracing::info!(
                 providers = n.providers,
@@ -71,6 +88,7 @@ async fn main() -> anyhow::Result<()> {
             tracing::info!(providers = d.providers.len(), models = d.models.len(), incidents = d.incidents.len(), dir = %dir.display(), "exported");
         }
         Command::Serve(config) => serve(pool, config).await?,
+        Command::Healthcheck { .. } => unreachable!(),
     }
     Ok(())
 }
@@ -90,6 +108,17 @@ async fn serve(pool: sqlx::PgPool, config: Config) -> anyhow::Result<()> {
     axum::serve(listener, router(state).into_make_service_with_connect_info::<SocketAddr>())
         .with_graceful_shutdown(shutdown())
         .await?;
+    Ok(())
+}
+
+async fn healthcheck(port: u16) -> anyhow::Result<()> {
+    let res = reqwest::Client::builder()
+        .timeout(Duration::from_secs(3))
+        .build()?
+        .get(format!("http://127.0.0.1:{port}/api/health"))
+        .send()
+        .await?;
+    anyhow::ensure!(res.status().is_success(), "health returned {}", res.status());
     Ok(())
 }
 
