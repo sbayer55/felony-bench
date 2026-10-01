@@ -1,0 +1,139 @@
+/* Layout: a dense leaderboard clone. Light warm-grey ground, white table surface, hairline borders,
+   one accent (a judicial red) reserved for scores and the active state. Numbers are always mono. */
+:root {
+  --bg: #f4f3ef;
+  --surface: #ffffff;
+  --surface-2: #faf9f6;
+  --fg: #1b1a17;
+  --fg-2: #4a4843;
+  --muted: #76736b;
+  --line: #e3e0d8;
+  --line-strong: #c9c5ba;
+  --accent: #b3261e;
+  --accent-fg: #ffffff;
+  --accent-soft: #fbe9e7;
+  --accent-ink: #8f1d17;
+  --rank-gold: #b8860b;
+  --focus: #2f5bea;
+
+  /* Evidence classes */
+  --ev-production: #b3261e;
+  --ev-production-bg: #fbe9e7;
+  --ev-evaluation: #3b5bdb;
+  --ev-evaluation-bg: #e7ecfb;
+  --ev-alleged: #b26b00;
+  --ev-alleged-bg: #fbefd9;
+  --ev-litigation: #6f42c1;
+  --ev-litigation-bg: #efe8fa;
+  --ev-regulatory: #0f766e;
+  --ev-regulatory-bg: #dcf3f0;
+
+  /* Charts: categorical, fixed order, validated for CVD separation */
+  --c1: #2a78d6;
+  --c2: #eb6834;
+  --c3: #1baf7a;
+  --c4: #eda100;
+  --c5: #e87ba4;
+  --c6: #008300;
+  --c7: #4a3aa7;
+  --c8: #e34948;
+  --chart-grid: #e3e0d8;
+  --chart-ink: #4a4843;
+
+  --font-sans: 'IBM Plex Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  --radius: 4px;
+  --radius-lg: 8px;
+  --shadow: 0 1px 2px rgba(20, 18, 12, 0.06);
+  --maxw: 1280px;
+  --gutter: 16px;
+
+  color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    --bg: #131210;
+    --surface: #1c1b18;
+    --surface-2: #211f1b;
+    --fg: #ebe8e1;
+    --fg-2: #c3bfb5;
+    --muted: #918d83;
+    --line: #2d2b26;
+    --line-strong: #44413a;
+    --accent: #e0574d;
+    --accent-fg: #1a0b0a;
+    --accent-soft: #3a1c19;
+    --accent-ink: #f08a82;
+    --rank-gold: #d8a93a;
+    --focus: #7c9cff;
+
+    --ev-production: #f08a82;
+    --ev-production-bg: #3a1c19;
+    --ev-evaluation: #8fa6ff;
+    --ev-evaluation-bg: #1f2745;
+    --ev-alleged: #e6b05a;
+    --ev-alleged-bg: #3b2c12;
+    --ev-litigation: #c4a4ff;
+    --ev-litigation-bg: #2d2144;
+    --ev-regulatory: #5fd0c3;
+    --ev-regulatory-bg: #113531;
+
+    --c1: #3987e5;
+    --c2: #d95926;
+    --c3: #199e70;
+    --c4: #c98500;
+    --c5: #d55181;
+    --c6: #008300;
+    --c7: #9085e9;
+    --c8: #e66767;
+    --chart-grid: #2d2b26;
+    --chart-ink: #c3bfb5;
+    --shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+
+    color-scheme: dark;
+  }
+}
+
+:root[data-theme='dark'] {
+  --bg: #131210;
+  --surface: #1c1b18;
+  --surface-2: #211f1b;
+  --fg: #ebe8e1;
+  --fg-2: #c3bfb5;
+  --muted: #918d83;
+  --line: #2d2b26;
+  --line-strong: #44413a;
+  --accent: #e0574d;
+  --accent-fg: #1a0b0a;
+  --accent-soft: #3a1c19;
+  --accent-ink: #f08a82;
+  --rank-gold: #d8a93a;
+  --focus: #7c9cff;
+
+  --ev-production: #f08a82;
+  --ev-production-bg: #3a1c19;
+  --ev-evaluation: #8fa6ff;
+  --ev-evaluation-bg: #1f2745;
+  --ev-alleged: #e6b05a;
+  --ev-alleged-bg: #3b2c12;
+  --ev-litigation: #c4a4ff;
+  --ev-litigation-bg: #2d2144;
+  --ev-regulatory: #5fd0c3;
+  --ev-regulatory-bg: #113531;
+
+  --c1: #3987e5;
+  --c2: #d95926;
+  --c3: #199e70;
+  --c4: #c98500;
+  --c5: #d55181;
+  --c6: #008300;
+  --c7: #9085e9;
+  --c8: #e66767;
+  --chart-grid: #2d2b26;
+  --chart-ink: #c3bfb5;
+  --shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+
+  color-scheme: dark;
+}

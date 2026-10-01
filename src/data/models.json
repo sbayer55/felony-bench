@@ -1,0 +1,643 @@
+[
+  {
+    "id": "chatgpt",
+    "name": "ChatGPT",
+    "providerId": "openai",
+    "family": "GPT"
+  },
+  {
+    "id": "gpt-3-5",
+    "name": "GPT-3.5",
+    "providerId": "openai",
+    "family": "GPT",
+    "released": "2022-11-30"
+  },
+  {
+    "id": "gpt-4",
+    "name": "GPT-4",
+    "providerId": "openai",
+    "family": "GPT",
+    "released": "2023-03-14"
+  },
+  {
+    "id": "gpt-4o",
+    "name": "GPT-4o",
+    "providerId": "openai",
+    "family": "GPT",
+    "released": "2024-05-13"
+  },
+  {
+    "id": "gpt-4-1",
+    "name": "GPT-4.1",
+    "providerId": "openai",
+    "family": "GPT",
+    "released": "2025-04-14"
+  },
+  {
+    "id": "gpt-5",
+    "name": "GPT-5",
+    "providerId": "openai",
+    "family": "GPT",
+    "released": "2025-08-07"
+  },
+  {
+    "id": "o1",
+    "name": "o1",
+    "providerId": "openai",
+    "family": "o-series",
+    "released": "2024-12-05"
+  },
+  {
+    "id": "o1-preview",
+    "name": "o1-preview",
+    "providerId": "openai",
+    "family": "o-series",
+    "released": "2024-09-12"
+  },
+  {
+    "id": "o3",
+    "name": "o3",
+    "providerId": "openai",
+    "family": "o-series",
+    "released": "2025-04-16"
+  },
+  {
+    "id": "o3-mini",
+    "name": "o3-mini",
+    "providerId": "openai",
+    "family": "o-series",
+    "released": "2025-01-31"
+  },
+  {
+    "id": "o4-mini",
+    "name": "o4-mini",
+    "providerId": "openai",
+    "family": "o-series",
+    "released": "2025-04-16"
+  },
+  {
+    "id": "codex",
+    "name": "Codex",
+    "providerId": "openai",
+    "family": "Codex"
+  },
+  {
+    "id": "codex-mini",
+    "name": "codex-mini",
+    "providerId": "openai",
+    "family": "Codex",
+    "released": "2025-05-16"
+  },
+  {
+    "id": "claude",
+    "name": "Claude",
+    "providerId": "anthropic",
+    "family": "Claude"
+  },
+  {
+    "id": "claude-3-opus",
+    "name": "Claude 3 Opus",
+    "providerId": "anthropic",
+    "family": "Claude 3",
+    "released": "2024-03-04"
+  },
+  {
+    "id": "claude-3-5-sonnet",
+    "name": "Claude 3.5 Sonnet",
+    "providerId": "anthropic",
+    "family": "Claude 3.5",
+    "released": "2024-06-20"
+  },
+  {
+    "id": "claude-3-7-sonnet",
+    "name": "Claude 3.7 Sonnet",
+    "providerId": "anthropic",
+    "family": "Claude 3.7",
+    "released": "2025-02-24"
+  },
+  {
+    "id": "claude-sonnet-4",
+    "name": "Claude Sonnet 4",
+    "providerId": "anthropic",
+    "family": "Claude 4",
+    "released": "2025-05-22"
+  },
+  {
+    "id": "claude-opus-4",
+    "name": "Claude Opus 4",
+    "providerId": "anthropic",
+    "family": "Claude 4",
+    "released": "2025-05-22"
+  },
+  {
+    "id": "claude-opus-4-1",
+    "name": "Claude Opus 4.1",
+    "providerId": "anthropic",
+    "family": "Claude 4",
+    "released": "2025-08-05"
+  },
+  {
+    "id": "claude-sonnet-4-5",
+    "name": "Claude Sonnet 4.5",
+    "providerId": "anthropic",
+    "family": "Claude 4.5",
+    "released": "2025-09-29"
+  },
+  {
+    "id": "claude-code",
+    "name": "Claude Code",
+    "providerId": "anthropic",
+    "family": "Claude"
+  },
+  {
+    "id": "bard",
+    "name": "Bard",
+    "providerId": "google",
+    "family": "Bard",
+    "released": "2023-03-21"
+  },
+  {
+    "id": "gemini",
+    "name": "Gemini",
+    "providerId": "google",
+    "family": "Gemini"
+  },
+  {
+    "id": "gemini-1-5-pro",
+    "name": "Gemini 1.5 Pro",
+    "providerId": "google",
+    "family": "Gemini 1.5",
+    "released": "2024-02-15"
+  },
+  {
+    "id": "gemini-2-0-flash",
+    "name": "Gemini 2.0 Flash",
+    "providerId": "google",
+    "family": "Gemini 2.0",
+    "released": "2024-12-11"
+  },
+  {
+    "id": "gemini-2-5-pro",
+    "name": "Gemini 2.5 Pro",
+    "providerId": "google",
+    "family": "Gemini 2.5",
+    "released": "2025-03-25"
+  },
+  {
+    "id": "gemini-cli",
+    "name": "Gemini CLI",
+    "providerId": "google",
+    "family": "Gemini",
+    "released": "2025-06-25"
+  },
+  {
+    "id": "llama-2",
+    "name": "Llama 2",
+    "providerId": "meta",
+    "family": "Llama",
+    "released": "2023-07-18"
+  },
+  {
+    "id": "llama-3",
+    "name": "Llama 3",
+    "providerId": "meta",
+    "family": "Llama",
+    "released": "2024-04-18"
+  },
+  {
+    "id": "llama-3-1-405b",
+    "name": "Llama 3.1 405B",
+    "providerId": "meta",
+    "family": "Llama",
+    "released": "2024-07-23"
+  },
+  {
+    "id": "llama-4",
+    "name": "Llama 4",
+    "providerId": "meta",
+    "family": "Llama",
+    "released": "2025-04-05"
+  },
+  {
+    "id": "meta-ai",
+    "name": "Meta AI",
+    "providerId": "meta",
+    "family": "Llama"
+  },
+  {
+    "id": "grok",
+    "name": "Grok",
+    "providerId": "xai",
+    "family": "Grok"
+  },
+  {
+    "id": "grok-2",
+    "name": "Grok 2",
+    "providerId": "xai",
+    "family": "Grok",
+    "released": "2024-08-13"
+  },
+  {
+    "id": "grok-3",
+    "name": "Grok 3",
+    "providerId": "xai",
+    "family": "Grok",
+    "released": "2025-02-17"
+  },
+  {
+    "id": "grok-4",
+    "name": "Grok 4",
+    "providerId": "xai",
+    "family": "Grok",
+    "released": "2025-07-09"
+  },
+  {
+    "id": "mistral-large",
+    "name": "Mistral Large",
+    "providerId": "mistral",
+    "family": "Mistral",
+    "released": "2024-02-26"
+  },
+  {
+    "id": "le-chat",
+    "name": "Le Chat",
+    "providerId": "mistral",
+    "family": "Mistral"
+  },
+  {
+    "id": "deepseek-v3",
+    "name": "DeepSeek-V3",
+    "providerId": "deepseek",
+    "family": "DeepSeek",
+    "released": "2024-12-26"
+  },
+  {
+    "id": "deepseek-r1",
+    "name": "DeepSeek-R1",
+    "providerId": "deepseek",
+    "family": "DeepSeek",
+    "released": "2025-01-20"
+  },
+  {
+    "id": "qwen-2-5",
+    "name": "Qwen2.5",
+    "providerId": "alibaba",
+    "family": "Qwen",
+    "released": "2024-09-19"
+  },
+  {
+    "id": "qwen-3",
+    "name": "Qwen3",
+    "providerId": "alibaba",
+    "family": "Qwen",
+    "released": "2025-04-29"
+  },
+  {
+    "id": "copilot",
+    "name": "Microsoft Copilot",
+    "providerId": "microsoft",
+    "family": "Copilot"
+  },
+  {
+    "id": "phi-4",
+    "name": "Phi-4",
+    "providerId": "microsoft",
+    "family": "Phi",
+    "released": "2024-12-12"
+  },
+  {
+    "id": "amazon-q-developer",
+    "name": "Amazon Q Developer",
+    "providerId": "amazon",
+    "family": "Q"
+  },
+  {
+    "id": "nova",
+    "name": "Amazon Nova",
+    "providerId": "amazon",
+    "family": "Nova",
+    "released": "2024-12-03"
+  },
+  {
+    "id": "command-r-plus",
+    "name": "Command R+",
+    "providerId": "cohere",
+    "family": "Command",
+    "released": "2024-04-04"
+  },
+  {
+    "id": "jamba",
+    "name": "Jamba",
+    "providerId": "ai21",
+    "family": "Jamba",
+    "released": "2024-03-28"
+  },
+  {
+    "id": "sonar",
+    "name": "Sonar",
+    "providerId": "perplexity",
+    "family": "Sonar"
+  },
+  {
+    "id": "character-ai",
+    "name": "Character.AI",
+    "providerId": "character-ai",
+    "family": "c.ai"
+  },
+  {
+    "id": "kimi-k2",
+    "name": "Kimi K2",
+    "providerId": "moonshot",
+    "family": "Kimi",
+    "released": "2025-07-11"
+  },
+  {
+    "id": "glm-4-5",
+    "name": "GLM-4.5",
+    "providerId": "zhipu",
+    "family": "GLM",
+    "released": "2025-07-28"
+  },
+  {
+    "id": "ernie-4-5",
+    "name": "ERNIE 4.5",
+    "providerId": "baidu",
+    "family": "ERNIE",
+    "released": "2025-03-16"
+  },
+  {
+    "id": "yi-large",
+    "name": "Yi-Large",
+    "providerId": "01-ai",
+    "family": "Yi",
+    "released": "2024-05-13"
+  },
+  {
+    "id": "hunyuan",
+    "name": "Hunyuan",
+    "providerId": "tencent",
+    "family": "Hunyuan"
+  },
+  {
+    "id": "doubao",
+    "name": "Doubao",
+    "providerId": "bytedance",
+    "family": "Doubao"
+  },
+  {
+    "id": "minimax-m1",
+    "name": "MiniMax-M1",
+    "providerId": "minimax",
+    "family": "MiniMax",
+    "released": "2025-06-16"
+  },
+  {
+    "id": "nemotron",
+    "name": "Nemotron",
+    "providerId": "nvidia",
+    "family": "Nemotron"
+  },
+  {
+    "id": "granite",
+    "name": "Granite",
+    "providerId": "ibm",
+    "family": "Granite"
+  },
+  {
+    "id": "apple-intelligence",
+    "name": "Apple Intelligence",
+    "providerId": "apple",
+    "family": "Apple Foundation Models"
+  },
+  {
+    "id": "olmo",
+    "name": "OLMo",
+    "providerId": "allenai",
+    "family": "OLMo"
+  },
+  {
+    "id": "smollm",
+    "name": "SmolLM",
+    "providerId": "huggingface",
+    "family": "SmolLM"
+  },
+  {
+    "id": "dbrx",
+    "name": "DBRX",
+    "providerId": "databricks",
+    "family": "DBRX",
+    "released": "2024-03-27"
+  },
+  {
+    "id": "arctic",
+    "name": "Arctic",
+    "providerId": "snowflake",
+    "family": "Arctic",
+    "released": "2024-04-24"
+  },
+  {
+    "id": "reka-core",
+    "name": "Reka Core",
+    "providerId": "reka",
+    "family": "Reka"
+  },
+  {
+    "id": "pi",
+    "name": "Pi",
+    "providerId": "inflection",
+    "family": "Inflection"
+  },
+  {
+    "id": "ai-scientist",
+    "name": "The AI Scientist",
+    "providerId": "sakana",
+    "family": "AI Scientist"
+  },
+  {
+    "id": "hermes",
+    "name": "Hermes",
+    "providerId": "nous",
+    "family": "Hermes"
+  },
+  {
+    "id": "lfm",
+    "name": "LFM",
+    "providerId": "liquid",
+    "family": "Liquid Foundation Models"
+  },
+  {
+    "id": "palmyra",
+    "name": "Palmyra",
+    "providerId": "writer",
+    "family": "Palmyra"
+  },
+  {
+    "id": "falcon",
+    "name": "Falcon",
+    "providerId": "tii",
+    "family": "Falcon"
+  },
+  {
+    "id": "stablelm",
+    "name": "StableLM",
+    "providerId": "stability",
+    "family": "StableLM"
+  },
+  {
+    "id": "replit-agent",
+    "name": "Replit Agent",
+    "providerId": "replit",
+    "family": "Replit"
+  },
+  {
+    "id": "replika",
+    "name": "Replika",
+    "providerId": "luka",
+    "family": "Replika"
+  },
+  {
+    "id": "gpt-5-2",
+    "name": "GPT-5.2",
+    "providerId": "openai"
+  },
+  {
+    "id": "gpt-5-5",
+    "name": "GPT-5.5",
+    "providerId": "openai"
+  },
+  {
+    "id": "gpt-5-6-sol",
+    "name": "GPT-5.6 Sol",
+    "providerId": "openai"
+  },
+  {
+    "id": "claude-haiku-4-5",
+    "name": "Claude Haiku 4.5",
+    "providerId": "anthropic"
+  },
+  {
+    "id": "claude-opus-4-6",
+    "name": "Claude Opus 4.6",
+    "providerId": "anthropic"
+  },
+  {
+    "id": "claude-sonnet-4-6",
+    "name": "Claude Sonnet 4.6",
+    "providerId": "anthropic"
+  },
+  {
+    "id": "claude-opus-4-8",
+    "name": "Claude Opus 4.8",
+    "providerId": "anthropic"
+  },
+  {
+    "id": "claude-mythos-preview",
+    "name": "Claude Mythos Preview",
+    "providerId": "anthropic"
+  },
+  {
+    "id": "gemini-2-5-flash",
+    "name": "Gemini 2.5 Flash",
+    "providerId": "google"
+  },
+  {
+    "id": "gemini-3-pro",
+    "name": "Gemini 3 Pro",
+    "providerId": "google"
+  },
+  {
+    "id": "gemini-3-flash",
+    "name": "Gemini 3 Flash",
+    "providerId": "google"
+  },
+  {
+    "id": "gemini-3-1-pro",
+    "name": "Gemini 3.1 Pro",
+    "providerId": "google"
+  },
+  {
+    "id": "grok-3-beta",
+    "name": "Grok 3 Beta",
+    "providerId": "xai"
+  },
+  {
+    "id": "deepseek-v3-1",
+    "name": "DeepSeek V3.1",
+    "providerId": "deepseek"
+  },
+  {
+    "id": "glm-4-7",
+    "name": "GLM-4.7",
+    "providerId": "zhipu"
+  },
+  {
+    "id": "kimi-k2-5",
+    "name": "Kimi K2.5",
+    "providerId": "moonshot"
+  },
+  {
+    "id": "sakana-ai-scientist",
+    "name": "The AI Scientist (agent system)",
+    "providerId": "sakana"
+  },
+  {
+    "id": "claude-haiku",
+    "name": "Claude Haiku (family)",
+    "providerId": "anthropic"
+  },
+  {
+    "id": "claude-sonnet",
+    "name": "Claude Sonnet (family)",
+    "providerId": "anthropic"
+  },
+  {
+    "id": "claude-opus",
+    "name": "Claude Opus (family)",
+    "providerId": "anthropic"
+  },
+  {
+    "id": "gemini-1-5-flash",
+    "name": "Gemini 1.5 Flash",
+    "providerId": "google"
+  },
+  {
+    "id": "gemini-3-5",
+    "name": "Gemini 3.5",
+    "providerId": "google"
+  },
+  {
+    "id": "qwen-2-5-coder-32b-instruct",
+    "name": "Qwen2.5-Coder-32B-Instruct",
+    "providerId": "alibaba"
+  },
+  {
+    "id": "openclaw",
+    "name": "OpenClaw (open-source agent)",
+    "providerId": "openclaw"
+  },
+  {
+    "id": "deepseek",
+    "name": "DeepSeek (app/API)",
+    "providerId": "deepseek"
+  },
+  {
+    "id": "llama",
+    "name": "Llama",
+    "providerId": "meta"
+  },
+  {
+    "id": "claude-opus-4-7",
+    "name": "Claude Opus 4.7",
+    "providerId": "anthropic"
+  },
+  {
+    "id": "claude-mythos-5",
+    "name": "Claude Mythos 5",
+    "providerId": "anthropic"
+  },
+  {
+    "id": "ross",
+    "name": "ROSS legal research AI",
+    "providerId": "ross-intelligence"
+  }
+]

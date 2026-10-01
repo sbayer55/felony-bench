@@ -1,0 +1,64 @@
+.badge {
+  display: inline-flex;
+  align-items: center;
+  height: 18px;
+  padding: 0 6px;
+  border-radius: 3px;
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  border: 1px solid transparent;
+  line-height: 1;
+}
+
+.ev_production {
+  color: var(--ev-production);
+  background: var(--ev-production-bg);
+}
+
+.ev_evaluation {
+  color: var(--ev-evaluation);
+  background: var(--ev-evaluation-bg);
+}
+
+.ev_alleged {
+  color: var(--ev-alleged);
+  background: var(--ev-alleged-bg);
+}
+
+.ev_litigation {
+  color: var(--ev-litigation);
+  background: var(--ev-litigation-bg);
+}
+
+.ev_regulatory {
+  color: var(--ev-regulatory);
+  background: var(--ev-regulatory-bg);
+}
+
+.cat,
+.role {
+  color: var(--fg-2);
+  border-color: var(--line-strong);
+  background: var(--surface);
+  text-transform: none;
+  letter-spacing: 0;
+  font-family: var(--font-sans);
+  font-weight: 500;
+  font-size: 11.5px;
+}
+
+.degree {
+  color: var(--fg-2);
+  background: var(--surface-2);
+  border-color: var(--line);
+}
+
+.deg_3 {
+  color: var(--accent-ink);
+  background: var(--accent-soft);
+  border-color: transparent;
+}

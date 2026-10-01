@@ -1,0 +1,278 @@
+[
+  {
+    "id": "openai",
+    "name": "OpenAI",
+    "url": "https://openai.com",
+    "country": "US",
+    "founded": 2015
+  },
+  {
+    "id": "anthropic",
+    "name": "Anthropic",
+    "url": "https://www.anthropic.com",
+    "country": "US",
+    "founded": 2021
+  },
+  {
+    "id": "google",
+    "name": "Google DeepMind",
+    "url": "https://deepmind.google",
+    "country": "US",
+    "founded": 2010
+  },
+  {
+    "id": "meta",
+    "name": "Meta",
+    "url": "https://ai.meta.com",
+    "country": "US",
+    "founded": 2004
+  },
+  {
+    "id": "xai",
+    "name": "xAI",
+    "url": "https://x.ai",
+    "country": "US",
+    "founded": 2023
+  },
+  {
+    "id": "mistral",
+    "name": "Mistral AI",
+    "url": "https://mistral.ai",
+    "country": "FR",
+    "founded": 2023
+  },
+  {
+    "id": "deepseek",
+    "name": "DeepSeek",
+    "url": "https://www.deepseek.com",
+    "country": "CN",
+    "founded": 2023
+  },
+  {
+    "id": "alibaba",
+    "name": "Alibaba (Qwen)",
+    "url": "https://qwenlm.github.io",
+    "country": "CN",
+    "founded": 1999
+  },
+  {
+    "id": "microsoft",
+    "name": "Microsoft",
+    "url": "https://www.microsoft.com/ai",
+    "country": "US",
+    "founded": 1975
+  },
+  {
+    "id": "amazon",
+    "name": "Amazon",
+    "url": "https://aws.amazon.com/ai",
+    "country": "US",
+    "founded": 1994
+  },
+  {
+    "id": "cohere",
+    "name": "Cohere",
+    "url": "https://cohere.com",
+    "country": "CA",
+    "founded": 2019
+  },
+  {
+    "id": "ai21",
+    "name": "AI21 Labs",
+    "url": "https://www.ai21.com",
+    "country": "IL",
+    "founded": 2017
+  },
+  {
+    "id": "perplexity",
+    "name": "Perplexity",
+    "url": "https://www.perplexity.ai",
+    "country": "US",
+    "founded": 2022
+  },
+  {
+    "id": "character-ai",
+    "name": "Character.AI",
+    "url": "https://character.ai",
+    "country": "US",
+    "founded": 2021
+  },
+  {
+    "id": "moonshot",
+    "name": "Moonshot AI",
+    "url": "https://www.moonshot.ai",
+    "country": "CN",
+    "founded": 2023
+  },
+  {
+    "id": "zhipu",
+    "name": "Zhipu AI",
+    "url": "https://www.zhipuai.cn",
+    "country": "CN",
+    "founded": 2019
+  },
+  {
+    "id": "baidu",
+    "name": "Baidu",
+    "url": "https://yiyan.baidu.com",
+    "country": "CN",
+    "founded": 2000
+  },
+  {
+    "id": "01-ai",
+    "name": "01.AI",
+    "url": "https://www.01.ai",
+    "country": "CN",
+    "founded": 2023
+  },
+  {
+    "id": "tencent",
+    "name": "Tencent",
+    "url": "https://hunyuan.tencent.com",
+    "country": "CN",
+    "founded": 1998
+  },
+  {
+    "id": "bytedance",
+    "name": "ByteDance",
+    "url": "https://seed.bytedance.com",
+    "country": "CN",
+    "founded": 2012
+  },
+  {
+    "id": "minimax",
+    "name": "MiniMax",
+    "url": "https://www.minimax.io",
+    "country": "CN",
+    "founded": 2021
+  },
+  {
+    "id": "nvidia",
+    "name": "NVIDIA",
+    "url": "https://www.nvidia.com/en-us/ai",
+    "country": "US",
+    "founded": 1993
+  },
+  {
+    "id": "ibm",
+    "name": "IBM",
+    "url": "https://www.ibm.com/granite",
+    "country": "US",
+    "founded": 1911
+  },
+  {
+    "id": "apple",
+    "name": "Apple",
+    "url": "https://machinelearning.apple.com",
+    "country": "US",
+    "founded": 1976
+  },
+  {
+    "id": "allenai",
+    "name": "Allen Institute for AI",
+    "url": "https://allenai.org",
+    "country": "US",
+    "founded": 2014
+  },
+  {
+    "id": "huggingface",
+    "name": "Hugging Face",
+    "url": "https://huggingface.co",
+    "country": "US",
+    "founded": 2016
+  },
+  {
+    "id": "databricks",
+    "name": "Databricks",
+    "url": "https://www.databricks.com",
+    "country": "US",
+    "founded": 2013
+  },
+  {
+    "id": "snowflake",
+    "name": "Snowflake",
+    "url": "https://www.snowflake.com",
+    "country": "US",
+    "founded": 2012
+  },
+  {
+    "id": "reka",
+    "name": "Reka AI",
+    "url": "https://www.reka.ai",
+    "country": "US",
+    "founded": 2022
+  },
+  {
+    "id": "inflection",
+    "name": "Inflection AI",
+    "url": "https://inflection.ai",
+    "country": "US",
+    "founded": 2022
+  },
+  {
+    "id": "sakana",
+    "name": "Sakana AI",
+    "url": "https://sakana.ai",
+    "country": "JP",
+    "founded": 2023
+  },
+  {
+    "id": "nous",
+    "name": "Nous Research",
+    "url": "https://nousresearch.com",
+    "country": "US",
+    "founded": 2023
+  },
+  {
+    "id": "liquid",
+    "name": "Liquid AI",
+    "url": "https://www.liquid.ai",
+    "country": "US",
+    "founded": 2023
+  },
+  {
+    "id": "writer",
+    "name": "Writer",
+    "url": "https://writer.com",
+    "country": "US",
+    "founded": 2020
+  },
+  {
+    "id": "tii",
+    "name": "Technology Innovation Institute",
+    "url": "https://falconllm.tii.ae",
+    "country": "AE",
+    "founded": 2020
+  },
+  {
+    "id": "stability",
+    "name": "Stability AI",
+    "url": "https://stability.ai",
+    "country": "GB",
+    "founded": 2019
+  },
+  {
+    "id": "replit",
+    "name": "Replit",
+    "url": "https://replit.com",
+    "country": "US",
+    "founded": 2016
+  },
+  {
+    "id": "luka",
+    "name": "Luka (Replika)",
+    "url": "https://replika.com",
+    "country": "US",
+    "founded": 2014
+  },
+  {
+    "id": "openclaw",
+    "name": "OpenClaw",
+    "url": "https://openclaw.ai"
+  },
+  {
+    "id": "ross-intelligence",
+    "name": "ROSS Intelligence",
+    "url": "https://www.rossintelligence.com"
+  }
+]

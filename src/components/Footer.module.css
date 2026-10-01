@@ -1,0 +1,33 @@
+.footer {
+  border-top: 1px solid var(--line);
+  background: var(--surface);
+  padding-block: 20px 28px;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.inner {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.disclaimer {
+  max-width: 78ch;
+}
+
+.disclaimer a {
+  color: var(--fg-2);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.meta {
+  display: flex;
+  gap: 18px;
+  flex-wrap: wrap;
+}
+
+.meta a {
+  color: var(--fg-2);
+}
