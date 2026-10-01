@@ -1,0 +1,524 @@
+{
+  "normalizeUrl": [
+    [
+      "https://www.example.com/a/b/",
+      "https://example.com/a/b"
+    ],
+    [
+      "http://www.example.com/a",
+      "https://example.com/a"
+    ],
+    [
+      "http://example.com/a",
+      "http://example.com/a"
+    ],
+    [
+      "https://Example.COM:8443/Path//?utm_source=x&id=7&fbclid=abc#frag",
+      "https://example.com:8443/Path?id=7"
+    ],
+    [
+      "https://news.site/story?ref=hn&source=rss&page=2",
+      "https://news.site/story?page=2"
+    ],
+    [
+      "https://news.site/story?Ref=x&refresh=1",
+      "https://news.site/story?refresh=1"
+    ],
+    [
+      "https://a.example/q?x=a b&y=%C3%A9",
+      "https://a.example/q?x=a+b&y=%C3%A9"
+    ],
+    [
+      "https://a.example/",
+      "https://a.example"
+    ],
+    [
+      "not a url ",
+      "not a url"
+    ]
+  ],
+  "titleSimilarity": [
+    [
+      "Claude deletes production database",
+      "Claude deleted the production database",
+      0.6
+    ],
+    [
+      "The Model and the Court",
+      "model court",
+      1
+    ],
+    [
+      "Café résumé fabricated",
+      "Cafe resume fabricated",
+      1
+    ],
+    [
+      "GPT-4o leaks keys",
+      "gpt 4o leaks keys!",
+      1
+    ],
+    [
+      "of the and",
+      "a an the",
+      0
+    ],
+    [
+      "Replit agent wipes SaaStr database during code freeze",
+      "Replit AI agent deletes SaaStr production database during code freeze",
+      0.6363636363636364
+    ]
+  ],
+  "findDuplicate": [
+    {
+      "name": "same source after normalization",
+      "candidate": {
+        "date": "2026-03-01",
+        "title": "Totally different",
+        "summary": "Acme said so.",
+        "modelIds": [],
+        "providerIds": [
+          "initech"
+        ],
+        "category": "destruction",
+        "degree": 2,
+        "evidenceClass": "production",
+        "role": "actor",
+        "attributionConfidence": "confirmed",
+        "sources": [
+          {
+            "title": "S",
+            "url": "https://court.example/order/?utm_campaign=x#top",
+            "publisher": "P",
+            "date": "2026-03-01"
+          }
+        ]
+      },
+      "existing": [
+        {
+          "id": "old-acme",
+          "date": "2026-03-01",
+          "title": "Acme agent wipes customer backups",
+          "summary": "Acme said so.",
+          "modelIds": [],
+          "providerIds": [
+            "acme"
+          ],
+          "category": "destruction",
+          "degree": 2,
+          "evidenceClass": "production",
+          "role": "actor",
+          "attributionConfidence": "confirmed",
+          "sources": [
+            {
+              "title": "Report",
+              "url": "https://news.example/acme",
+              "publisher": "News",
+              "date": "2026-03-01"
+            }
+          ]
+        },
+        {
+          "id": "old-globex",
+          "date": "2026-02-01",
+          "title": "Globex model fabricates citations",
+          "summary": "Acme said so.",
+          "modelIds": [],
+          "providerIds": [
+            "globex"
+          ],
+          "category": "destruction",
+          "degree": 2,
+          "evidenceClass": "production",
+          "role": "actor",
+          "attributionConfidence": "confirmed",
+          "sources": [
+            {
+              "title": "Order",
+              "url": "https://www.court.example/order/",
+              "publisher": "Court",
+              "date": "2026-02-01"
+            }
+          ]
+        }
+      ],
+      "expect": {
+        "existingId": "old-globex",
+        "reason": "source-url"
+      }
+    },
+    {
+      "name": "similar title, same provider, within 30 days",
+      "candidate": {
+        "date": "2026-03-20",
+        "title": "Acme agent wipes the customer backups",
+        "summary": "Acme said so.",
+        "modelIds": [],
+        "providerIds": [
+          "acme"
+        ],
+        "category": "destruction",
+        "degree": 2,
+        "evidenceClass": "production",
+        "role": "actor",
+        "attributionConfidence": "confirmed",
+        "sources": [
+          {
+            "title": "S",
+            "url": "https://other.example/1",
+            "publisher": "P",
+            "date": "2026-03-01"
+          }
+        ]
+      },
+      "existing": [
+        {
+          "id": "old-acme",
+          "date": "2026-03-01",
+          "title": "Acme agent wipes customer backups",
+          "summary": "Acme said so.",
+          "modelIds": [],
+          "providerIds": [
+            "acme"
+          ],
+          "category": "destruction",
+          "degree": 2,
+          "evidenceClass": "production",
+          "role": "actor",
+          "attributionConfidence": "confirmed",
+          "sources": [
+            {
+              "title": "Report",
+              "url": "https://news.example/acme",
+              "publisher": "News",
+              "date": "2026-03-01"
+            }
+          ]
+        },
+        {
+          "id": "old-globex",
+          "date": "2026-02-01",
+          "title": "Globex model fabricates citations",
+          "summary": "Acme said so.",
+          "modelIds": [],
+          "providerIds": [
+            "globex"
+          ],
+          "category": "destruction",
+          "degree": 2,
+          "evidenceClass": "production",
+          "role": "actor",
+          "attributionConfidence": "confirmed",
+          "sources": [
+            {
+              "title": "Order",
+              "url": "https://www.court.example/order/",
+              "publisher": "Court",
+              "date": "2026-02-01"
+            }
+          ]
+        }
+      ],
+      "expect": {
+        "existingId": "old-acme",
+        "reason": "similar-title"
+      }
+    },
+    {
+      "name": "similar title, different provider",
+      "candidate": {
+        "date": "2026-03-02",
+        "title": "Acme agent wipes customer backups",
+        "summary": "Acme said so.",
+        "modelIds": [],
+        "providerIds": [
+          "globex"
+        ],
+        "category": "destruction",
+        "degree": 2,
+        "evidenceClass": "production",
+        "role": "actor",
+        "attributionConfidence": "confirmed",
+        "sources": [
+          {
+            "title": "S",
+            "url": "https://other.example/2",
+            "publisher": "P",
+            "date": "2026-03-01"
+          }
+        ]
+      },
+      "existing": [
+        {
+          "id": "old-acme",
+          "date": "2026-03-01",
+          "title": "Acme agent wipes customer backups",
+          "summary": "Acme said so.",
+          "modelIds": [],
+          "providerIds": [
+            "acme"
+          ],
+          "category": "destruction",
+          "degree": 2,
+          "evidenceClass": "production",
+          "role": "actor",
+          "attributionConfidence": "confirmed",
+          "sources": [
+            {
+              "title": "Report",
+              "url": "https://news.example/acme",
+              "publisher": "News",
+              "date": "2026-03-01"
+            }
+          ]
+        },
+        {
+          "id": "old-globex",
+          "date": "2026-02-01",
+          "title": "Globex model fabricates citations",
+          "summary": "Acme said so.",
+          "modelIds": [],
+          "providerIds": [
+            "globex"
+          ],
+          "category": "destruction",
+          "degree": 2,
+          "evidenceClass": "production",
+          "role": "actor",
+          "attributionConfidence": "confirmed",
+          "sources": [
+            {
+              "title": "Order",
+              "url": "https://www.court.example/order/",
+              "publisher": "Court",
+              "date": "2026-02-01"
+            }
+          ]
+        }
+      ],
+      "expect": null
+    },
+    {
+      "name": "similar title, outside 30 days",
+      "candidate": {
+        "date": "2026-04-15",
+        "title": "Acme agent wipes customer backups",
+        "summary": "Acme said so.",
+        "modelIds": [],
+        "providerIds": [
+          "acme"
+        ],
+        "category": "destruction",
+        "degree": 2,
+        "evidenceClass": "production",
+        "role": "actor",
+        "attributionConfidence": "confirmed",
+        "sources": [
+          {
+            "title": "S",
+            "url": "https://other.example/3",
+            "publisher": "P",
+            "date": "2026-03-01"
+          }
+        ]
+      },
+      "existing": [
+        {
+          "id": "old-acme",
+          "date": "2026-03-01",
+          "title": "Acme agent wipes customer backups",
+          "summary": "Acme said so.",
+          "modelIds": [],
+          "providerIds": [
+            "acme"
+          ],
+          "category": "destruction",
+          "degree": 2,
+          "evidenceClass": "production",
+          "role": "actor",
+          "attributionConfidence": "confirmed",
+          "sources": [
+            {
+              "title": "Report",
+              "url": "https://news.example/acme",
+              "publisher": "News",
+              "date": "2026-03-01"
+            }
+          ]
+        },
+        {
+          "id": "old-globex",
+          "date": "2026-02-01",
+          "title": "Globex model fabricates citations",
+          "summary": "Acme said so.",
+          "modelIds": [],
+          "providerIds": [
+            "globex"
+          ],
+          "category": "destruction",
+          "degree": 2,
+          "evidenceClass": "production",
+          "role": "actor",
+          "attributionConfidence": "confirmed",
+          "sources": [
+            {
+              "title": "Order",
+              "url": "https://www.court.example/order/",
+              "publisher": "Court",
+              "date": "2026-02-01"
+            }
+          ]
+        }
+      ],
+      "expect": null
+    },
+    {
+      "name": "http is not https",
+      "candidate": {
+        "date": "2026-03-01",
+        "title": "Unrelated",
+        "summary": "Acme said so.",
+        "modelIds": [],
+        "providerIds": [
+          "initech"
+        ],
+        "category": "destruction",
+        "degree": 2,
+        "evidenceClass": "production",
+        "role": "actor",
+        "attributionConfidence": "confirmed",
+        "sources": [
+          {
+            "title": "S",
+            "url": "http://court.example/order",
+            "publisher": "P",
+            "date": "2026-03-01"
+          }
+        ]
+      },
+      "existing": [
+        {
+          "id": "old-acme",
+          "date": "2026-03-01",
+          "title": "Acme agent wipes customer backups",
+          "summary": "Acme said so.",
+          "modelIds": [],
+          "providerIds": [
+            "acme"
+          ],
+          "category": "destruction",
+          "degree": 2,
+          "evidenceClass": "production",
+          "role": "actor",
+          "attributionConfidence": "confirmed",
+          "sources": [
+            {
+              "title": "Report",
+              "url": "https://news.example/acme",
+              "publisher": "News",
+              "date": "2026-03-01"
+            }
+          ]
+        },
+        {
+          "id": "old-globex",
+          "date": "2026-02-01",
+          "title": "Globex model fabricates citations",
+          "summary": "Acme said so.",
+          "modelIds": [],
+          "providerIds": [
+            "globex"
+          ],
+          "category": "destruction",
+          "degree": 2,
+          "evidenceClass": "production",
+          "role": "actor",
+          "attributionConfidence": "confirmed",
+          "sources": [
+            {
+              "title": "Order",
+              "url": "https://www.court.example/order/",
+              "publisher": "Court",
+              "date": "2026-02-01"
+            }
+          ]
+        }
+      ],
+      "expect": null
+    },
+    {
+      "name": "distinct",
+      "candidate": {
+        "date": "2026-03-01",
+        "title": "Acme chatbot leaks support tickets",
+        "summary": "Acme said so.",
+        "modelIds": [],
+        "providerIds": [
+          "acme"
+        ],
+        "category": "destruction",
+        "degree": 2,
+        "evidenceClass": "production",
+        "role": "actor",
+        "attributionConfidence": "confirmed",
+        "sources": [
+          {
+            "title": "S",
+            "url": "https://other.example/4",
+            "publisher": "P",
+            "date": "2026-03-01"
+          }
+        ]
+      },
+      "existing": [
+        {
+          "id": "old-acme",
+          "date": "2026-03-01",
+          "title": "Acme agent wipes customer backups",
+          "summary": "Acme said so.",
+          "modelIds": [],
+          "providerIds": [
+            "acme"
+          ],
+          "category": "destruction",
+          "degree": 2,
+          "evidenceClass": "production",
+          "role": "actor",
+          "attributionConfidence": "confirmed",
+          "sources": [
+            {
+              "title": "Report",
+              "url": "https://news.example/acme",
+              "publisher": "News",
+              "date": "2026-03-01"
+            }
+          ]
+        },
+        {
+          "id": "old-globex",
+          "date": "2026-02-01",
+          "title": "Globex model fabricates citations",
+          "summary": "Acme said so.",
+          "modelIds": [],
+          "providerIds": [
+            "globex"
+          ],
+          "category": "destruction",
+          "degree": 2,
+          "evidenceClass": "production",
+          "role": "actor",
+          "attributionConfidence": "confirmed",
+          "sources": [
+            {
+              "title": "Order",
+              "url": "https://www.court.example/order/",
+              "publisher": "Court",
+              "date": "2026-02-01"
+            }
+          ]
+        }
+      ],
+      "expect": null
+    }
+  ]
+}

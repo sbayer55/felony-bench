@@ -1,9 +1,12 @@
 import { Link } from 'react-router-dom'
-import { ACTIONS_URL, REPO_URL, meta } from '../data'
+import { ACTIONS_URL, REPO_URL } from '../data'
+import { useDataStatus } from '../data/DataProvider'
 import { relativeTime } from '../lib/format'
 import styles from './Footer.module.css'
 
 export function Footer() {
+  const status = useDataStatus()
+  const meta = status.state === 'ready' ? status.data.meta : null
   return (
     <footer className={styles.footer}>
       <div className={`container ${styles.inner}`}>
@@ -14,7 +17,7 @@ export function Footer() {
         </p>
         <div className={styles.meta}>
           <span>
-            {meta.lastRefreshed ? (
+            {!meta ? null : meta.lastRefreshed ? (
               <>
                 Last automated refresh <span className="mono">{relativeTime(meta.lastRefreshed)}</span> ·{' '}
                 <span className="mono">+{meta.lastRunAdded}</span> added
@@ -23,6 +26,7 @@ export function Footer() {
               'Daily refresh has not run yet'
             )}
           </span>
+          <Link to="/submit">Submit a felony</Link>
           <a href={ACTIONS_URL} target="_blank" rel="noreferrer">
             Request refresh
           </a>

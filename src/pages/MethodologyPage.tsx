@@ -152,7 +152,7 @@ score(provider) = Σ degree(i)   for i in incidents where provider ∈ i.provide
         then runs the candidates through deterministic checks: schema validation, duplicate detection against the existing
         docket, a live fetch of every source URL, and a check that every provider and model is on the roster. At most ten
         incidents are added per run. The job is append-only: it never edits or removes an existing entry. What passes is
-        committed to <code>main</code> and the site redeploys.
+        written to the database in a single transaction and appears on the site within seconds.
       </p>
       <p>
         Anyone can trigger a refresh by hand from the{' '}
@@ -169,20 +169,15 @@ score(provider) = Σ degree(i)   for i in incidents where provider ∈ i.provide
       </p>
 
       <h2 id="submit">Submit a felony</h2>
-      <ol>
-        <li>
-          Fork <a href={REPO_URL} target="_blank" rel="noreferrer">the repository</a>.
-        </li>
-        <li>
-          Add an entry to <code>src/data/incidents.json</code>. If the model is not on the roster, add it to <code>src/data/models.json</code> too.
-        </li>
-        <li>
-          Run <code>pnpm check</code>. It validates the schema, the roster references, and the source URLs.
-        </li>
-        <li>Open a pull request. Link the source in the description.</li>
-      </ol>
       <p>
-        Corrections to existing entries follow the same path, or <a href={`${REPO_URL}/issues/new`} target="_blank" rel="noreferrer">open an issue</a>.
+        Use the <Link to="/submit">submission form</Link>. Fill in the incident the way it would appear on the docket, with
+        at least one https source that says what the entry says. Submissions are reviewed by a human; on approval they run
+        through the same schema, roster, duplicate, and live-source checks as the daily refresh. Anything that fails is
+        rejected, not patched.
+      </p>
+      <p>
+        Pull requests against <a href={REPO_URL} target="_blank" rel="noreferrer">the repository</a> are welcome too.
+        Corrections to existing entries go through <a href={`${REPO_URL}/issues/new`} target="_blank" rel="noreferrer">an issue</a>.
       </p>
 
       <h2>What this is not</h2>

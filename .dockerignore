@@ -1,0 +1,7 @@
+.git
+.claude
+node_modules
+dist
+api/target
+.env
+*.log

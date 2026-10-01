@@ -4,8 +4,14 @@
     {
       "name": "felony-bench",
       "runtimeExecutable": "pnpm",
-      "runtimeArgs": ["dev", "--port", "5173", "--strictPort"],
-      "port": 5173
+      "runtimeArgs": ["dev:web", "--port", "5174", "--strictPort"],
+      "port": 5174
+    },
+    {
+      "name": "felony-api",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": ["dev:api"],
+      "port": 8787
     }
   ]
 }

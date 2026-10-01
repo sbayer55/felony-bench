@@ -1,5 +1,6 @@
 import { Link, useParams } from 'react-router-dom'
-import { REPO_URL, incidentById, modelById, providerById } from '../data'
+import { REPO_URL } from '../data'
+import { useData } from '../data/DataProvider'
 import { CATEGORY_DESCRIPTIONS, CATEGORY_LABELS, DEGREE_DESCRIPTIONS, DEGREE_LABELS, EVIDENCE_DESCRIPTIONS, EVIDENCE_LABELS, ROLE_DESCRIPTIONS, ROLE_LABELS } from '../data/schema'
 import { formatDate } from '../lib/format'
 import { CategoryBadge, DegreeBadge, EvidenceBadge, RoleBadge } from '../components/Badge'
@@ -8,6 +9,7 @@ import styles from './IncidentPage.module.css'
 
 export function IncidentPage() {
   const { id } = useParams()
+  const { incidentById, modelById, providerById } = useData()
   const inc = id ? incidentById.get(id) : undefined
   if (!inc) return <NotFoundPage />
 

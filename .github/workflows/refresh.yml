@@ -19,7 +19,7 @@ on:
         default: false
 
 permissions:
-  contents: write
+  contents: read
 
 concurrency:
   group: refresh
@@ -36,30 +36,31 @@ jobs:
         with:
           node-version: 24
           cache: pnpm
-      - run: pnpm install --frozen-lockfile
 
-      - name: Research and validate
+      - name: Check secrets
+        id: guard
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: |
+          if [ -z "$DATABASE_URL" ]; then
+            echo "::warning::DATABASE_URL secret is not set; skipping refresh until the database is hosted."
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - if: steps.guard.outputs.ready == 'true'
+        run: pnpm install --frozen-lockfile
+
+      # Inserts straight into Postgres in one transaction; running API instances reload via NOTIFY.
+      - name: Research, validate, insert
+        if: steps.guard.outputs.ready == 'true'
         id: refresh
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
         run: |
           ARGS="--max=${{ github.event.inputs.max || '10' }}"
           if [ -n "${{ github.event.inputs.since }}" ]; then ARGS="$ARGS --since=${{ github.event.inputs.since }}"; fi
           if [ "${{ github.event.inputs.dry_run }}" = "true" ]; then ARGS="$ARGS --dry-run"; fi
           pnpm refresh $ARGS
-
-      - name: Verify
-        run: pnpm check
-
-      - name: Commit and push
-        if: github.event.inputs.dry_run != 'true'
-        run: |
-          if git diff --quiet -- src/data; then
-            echo "No changes."
-            exit 0
-          fi
-          git config user.name "felony-bench-bot"
-          git config user.email "felony-bench-bot@users.noreply.github.com"
-          git add src/data
-          git commit -m "data: refresh $(date -u +%F) (+${{ steps.refresh.outputs.added || 0 }} incidents)"
-          git push

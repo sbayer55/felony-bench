@@ -1,16 +1,20 @@
 /**
  * Daily refresh: ask Claude (with web search) for new, sourced incidents, run them through deterministic
- * checks, and append what survives. Append-only; never edits or removes existing entries.
+ * checks, and insert what survives into Postgres. Append-only; never edits or removes existing entries.
+ * Running API instances pick the change up via NOTIFY.
+ *
+ *   DATABASE_URL=postgres://… ANTHROPIC_API_KEY=… pnpm refresh
  *
  *   pnpm refresh --dry-run            preview without writing
  *   pnpm refresh --max=5              cap additions this run
  *   pnpm refresh --since=2026-01-01   ignore candidates dated before
  */
-import { readFileSync, writeFileSync } from 'node:fs'
-import { resolve } from 'node:path'
-import { CATEGORIES, CATEGORY_DESCRIPTIONS, DEGREE_DESCRIPTIONS, EVIDENCE_CLASSES, EVIDENCE_DESCRIPTIONS, IncidentsFile, MetaSchema, ModelsFile, ProvidersFile, ROLES, ROLE_DESCRIPTIONS, crossCheck, type Incident, type Meta } from '../src/data/schema.ts'
+import { writeFileSync } from 'node:fs'
+import { CATEGORIES, CATEGORY_DESCRIPTIONS, DEGREE_DESCRIPTIONS, EVIDENCE_CLASSES, EVIDENCE_DESCRIPTIONS, IncidentsFile, ModelsFile, ProvidersFile, ROLES, ROLE_DESCRIPTIONS, crossCheck, type Incident } from '../src/data/schema.ts'
 import { makeClient, research } from './lib/claude.ts'
+import { connect, insertIncident, insertModel, loadAll, notifyChanged, recordRun } from './lib/db.ts'
 import { runPipeline } from './lib/pipeline.ts'
+import { sourcesReachable } from './lib/sources.ts'
 
 const args = new Map<string, string>()
 for (const a of process.argv.slice(2)) {
@@ -22,14 +26,16 @@ const max = Number(args.get('max') ?? 10)
 const since = args.get('since')
 const maxSearches = Number(args.get('searches') ?? 30)
 
-const dataDir = resolve(import.meta.dirname, '../src/data')
-const read = (name: string) => JSON.parse(readFileSync(resolve(dataDir, name), 'utf8'))
-const write = (name: string, value: unknown) => writeFileSync(resolve(dataDir, name), `${JSON.stringify(value, null, 2)}\n`)
-
-const providers = ProvidersFile.parse(read('providers.json'))
-const models = ModelsFile.parse(read('models.json'))
-const existing = IncidentsFile.parse(read('incidents.json'))
-const meta = MetaSchema.parse(read('meta.json'))
+if (!process.env.DATABASE_URL) {
+  console.error('[refresh] DATABASE_URL is not set')
+  process.exit(1)
+}
+const startedAt = new Date()
+const db = connect(process.env.DATABASE_URL)
+const snapshot = await loadAll(db)
+const providers = ProvidersFile.parse(snapshot.providers)
+const models = ModelsFile.parse(snapshot.models)
+const existing = IncidentsFile.parse(snapshot.incidents)
 
 const log = (s: string) => console.log(`[refresh] ${s}`)
 log(`${existing.length} incidents on file, ${models.length} models, ${providers.length} providers. dryRun=${dryRun} max=${max} since=${since ?? '-'}`)
@@ -76,26 +82,11 @@ const prompt = `Find new incidents published or occurring after ${since ?? lastD
 EXISTING DOCKET (most recent ${Math.min(existing.length, 120)}):
 ${digest || '(empty)'}`
 
-async function sourcesReachable(urls: string[]): Promise<boolean> {
-  for (const url of urls) {
-    try {
-      const res = await fetch(url, { method: 'GET', redirect: 'follow', headers: { 'user-agent': 'felony-bench-refresh/1.0 (+https://github.com/sbayer55/felony-bench)' }, signal: AbortSignal.timeout(15000) })
-      if (res.status >= 400 && res.status !== 403 && res.status !== 429) {
-        log(`source ${url} -> ${res.status}`)
-        return false
-      }
-    } catch (e) {
-      log(`source ${url} -> ${(e as Error).message}`)
-      return false
-    }
-  }
-  return true
-}
-
 const client = makeClient()
 const payload = await research(client, system, prompt, { maxSearches, log })
 if (!payload) {
   log('model ended without submitting; nothing to do')
+  await db.close()
   process.exit(0)
 }
 log(`model submitted ${payload.incidents.length} candidate(s), ${payload.candidateModels.length} candidate model(s)`)
@@ -108,7 +99,7 @@ const result = await runPipeline({
   existing,
   max,
   since,
-  sourcesReachable,
+  sourcesReachable: (urls) => sourcesReachable(urls, log),
 })
 
 for (const r of result.rejected) log(`REJECT  ${r.title}\n          ${r.reason}`)
@@ -120,25 +111,26 @@ const nextModels = [...models, ...result.newModels]
 const errors = crossCheck(providers, nextModels, nextIncidents)
 if (errors.length) {
   for (const e of errors) console.error(`[refresh] INVALID ${e}`)
+  await db.close()
   process.exit(1)
-}
-
-const nextMeta: Meta = {
-  lastRefreshed: new Date().toISOString(),
-  lastRunAdded: result.accepted.length,
-  lastRunRejected: result.rejected.length,
-  runId: process.env.GITHUB_RUN_ID ?? meta.runId,
 }
 
 if (dryRun) {
   log(`dry run: would add ${result.accepted.length}, reject ${result.rejected.length}. Nothing written.`)
+  await db.close()
   process.exit(0)
 }
 
-write('incidents.json', nextIncidents)
-write('models.json', nextModels)
-write('meta.json', nextMeta)
-log(`wrote ${result.accepted.length} new incident(s). Docket now ${nextIncidents.length}.`)
+// One transaction: roster additions, incidents, the run record, and the NOTIFY (delivered on commit).
+// The database's deferred integrity triggers re-check every reference at commit.
+await db.transaction(async (tx) => {
+  for (const m of result.newModels) await insertModel(tx, m)
+  for (const inc of [...result.accepted].reverse()) await insertIncident(tx, inc)
+  await recordRun(tx, { startedAt, added: result.accepted.length, rejected: result.rejected.length, ghRunId: process.env.GITHUB_RUN_ID ?? null })
+  await notifyChanged(tx)
+})
+await db.close()
+log(`inserted ${result.accepted.length} new incident(s). Docket now ${nextIncidents.length}.`)
 if (process.env.GITHUB_OUTPUT) {
   writeFileSync(process.env.GITHUB_OUTPUT, `added=${result.accepted.length}\nrejected=${result.rejected.length}\n`, { flag: 'a' })
 }
