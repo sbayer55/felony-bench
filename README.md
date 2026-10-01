@@ -62,6 +62,8 @@ docker compose -f compose.prod.yml up -d
 
 The site is at `https://$DOMAIN`, the review queue at `https://$DOMAIN/admin`. CI pushes images on every commit to `main` (tags `latest` and `sha-<commit>`, linux/amd64). Until the GHCR packages are made public, run `docker login ghcr.io` on the server, or add `--build` to build locally (also the way to get an arm64 image). `DOMAIN=localhost` tries the stack on your machine with a self-signed certificate.
 
+Each task has a `just prod-*` recipe (`just --list`), or run it directly:
+
 | Task | Command (prefix with `docker compose -f compose.prod.yml`) |
 |---|---|
 | Update | `pull && … up -d` (pin a version with `IMAGE_TAG=sha-…` in `.env`) |

@@ -3,6 +3,7 @@
 set dotenv-load
 
 api := "--manifest-path api/Cargo.toml"
+prod := "docker compose -f compose.prod.yml"
 
 [private]
 default:
@@ -104,3 +105,55 @@ up:
 # Seed the Docker stack's database
 up-seed:
     docker compose run --rm api felony-api seed
+
+# --- Production stack (compose.prod.yml); see README "Deploy" ---
+
+# Start the production stack with images pulled from GHCR
+prod-up:
+    {{ prod }} up -d --wait
+
+# Build the production images here instead of pulling them, then start the stack
+prod-build:
+    {{ prod }} up -d --build --wait
+
+# Pull newer images and restart whatever changed
+prod-update:
+    {{ prod }} pull
+    {{ prod }} up -d --wait
+
+# Stop the production stack (database, certificates and backups are kept)
+prod-down:
+    {{ prod }} down
+
+# Service status
+prod-ps:
+    {{ prod }} ps -a
+
+# Follow logs; pass services to filter (e.g. `just prod-logs api refresh`)
+prod-logs *services:
+    {{ prod }} logs -f --tail=100 {{ services }}
+
+# Run the incident refresh now; pass --dry-run to preview
+prod-refresh *args:
+    {{ prod }} exec refresh tsx scripts/refresh-incidents.ts {{ args }}
+
+# Take a database backup now, into ./backups
+prod-backup:
+    {{ prod }} exec backup /bin/sh /backup.sh --once
+
+# Restore a backup (e.g. `just prod-restore backups/felony-20261001-040000.dump`)
+[confirm("This overwrites the production database with the backup. Continue?")]
+prod-restore file:
+    {{ prod }} exec -T db pg_restore --clean --if-exists -U felony -d felony < {{ file }}
+    {{ prod }} restart api
+    {{ prod }} up -d --wait api
+
+# psql into the production database
+prod-shell:
+    {{ prod }} exec db psql -U felony -d felony
+
+# Dump the production database to data/seed/*.json
+prod-export:
+    {{ prod }} exec api felony-api export /tmp/seed
+    # docker cp can't read the api's tmpfs, so stream the files out
+    for f in providers models incidents; do {{ prod }} exec -T api cat /tmp/seed/$f.json > data/seed/$f.json; done
